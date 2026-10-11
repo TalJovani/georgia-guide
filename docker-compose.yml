@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:17
+    container_name: georgia-guide-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: georgia
+      POSTGRES_PASSWORD: georgia_dev_password
+      POSTGRES_DB: georgia_guide
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
