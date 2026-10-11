@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +8,64 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum UserRole {
+  TRAVELER
+  GUIDE
+}
+
+enum TripStatus {
+  NEW
+  ITINERARY_SENT
+  IN_REVISION
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum KosherPreference {
+  NONE
+  KOSHER_STYLE
+  KOSHER
+  MEHADRIN
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         UserRole @default(TRAVELER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tripRequests   TripRequest[] @relation("TravelerTrips")
+  guidedRequests TripRequest[] @relation("GuideTrips")
+}
+
+model TripRequest {
+  id             String           @id @default(uuid())
+  startDate      DateTime         @db.Date
+  endDate        DateTime         @db.Date
+  travelersCount Int
+  budget         Int?
+  currency       String           @default("USD")
+  kosher         KosherPreference @default(NONE)
+  needsFlights   Boolean          @default(false)
+  needsHotels    Boolean          @default(false)
+  description    String
+  status         TripStatus       @default(NEW)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  travelerId String
+  traveler   User    @relation("TravelerTrips", fields: [travelerId], references: [id])
+  guideId    String?
+  guide      User?   @relation("GuideTrips", fields: [guideId], references: [id])
+
+  @@index([travelerId])
+  @@index([guideId])
+  @@index([status])
 }
