@@ -1,15 +1,17 @@
 import bcrypt from "bcryptjs";
 import { Router } from "express";
-import jwt from "jsonwebtoken";
 import { z } from "zod";
-import { config } from "../config.js";
 import { prisma } from "../db.js";
 import { Prisma } from "../generated/prisma/client.js";
+import {
+    AUTH_COOKIE,
+    authCookieOptions,
+    sessionCookieMaxAge,
+    signSessionToken,
+} from "../lib/session.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 const BCRYPT_ROUNDS = 12;
-const SESSION_DAYS = 7;
-const SESSION_MS = SESSION_DAYS * 24 * 60 * 60 * 1000;
-export const AUTH_COOKIE = "token";
 
 // Compared against when the email doesn't exist, so a failed login
 // takes the same time whether or not the account exists.
@@ -84,20 +86,33 @@ authRouter.post("/login", async (req, res) => {
         return;
     }
 
-    const token = jwt.sign({ sub: user.id, role: user.role }, config.jwtSecret, {
-        algorithm: "HS256",
-        expiresIn: `${SESSION_DAYS}d`,
-    });
-
+    const token = signSessionToken({ id: user.id, role: user.role });
     res.cookie(AUTH_COOKIE, token, {
-        httpOnly: true,
-        secure: config.isProduction,
-        sameSite: "lax",
-        maxAge: SESSION_MS,
-        path: "/",
+        ...authCookieOptions,
+        maxAge: sessionCookieMaxAge(),
     });
 
     res.json({
         user: { id: user.id, email: user.email, name: user.name, role: user.role },
     });
+});
+
+authRouter.get("/me", requireAuth, async (req, res) => {
+    const user = await prisma.user.findUnique({
+        where: { id: req.user!.id },
+        select: { id: true, email: true, name: true, role: true },
+    });
+
+    if (!user) {
+        res.clearCookie(AUTH_COOKIE, authCookieOptions);
+        res.status(401).json({ error: "Not authenticated" });
+        return;
+    }
+
+    res.json({ user });
+});
+
+authRouter.post("/logout", (_req, res) => {
+    res.clearCookie(AUTH_COOKIE, authCookieOptions);
+    res.status(204).end();
 });
