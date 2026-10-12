@@ -1,8 +1,11 @@
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { AuthProvider } from './auth/AuthProvider'
 import { useAuth } from './auth/useAuth'
+import { RequireAuth } from './components/RequireAuth'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
+import { MyTripsPage } from './pages/MyTripsPage'
+import { NewTripRequestPage } from './pages/NewTripRequestPage'
 import { RegisterPage } from './pages/RegisterPage'
 
 function AppRoutes() {
@@ -17,6 +20,22 @@ function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route
+        path="/trips"
+        element={
+          <RequireAuth>
+            <MyTripsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/trips/new"
+        element={
+          <RequireAuth>
+            <NewTripRequestPage />
+          </RequireAuth>
+        }
+      />
     </Routes>
   )
 }

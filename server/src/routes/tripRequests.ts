@@ -20,8 +20,15 @@ const createTripRequestSchema = z
         kosher: z.enum(KosherPreference).default("NONE"),
         needsFlights: z.boolean().default(false),
         needsHotels: z.boolean().default(false),
+        needsFullPackage: z.boolean().default(false),
         description: z.string().trim().min(10).max(5000),
     })
+    // A full package always includes flights and lodging.
+    .transform((data) =>
+        data.needsFullPackage
+            ? { ...data, needsFlights: true, needsHotels: true }
+            : data,
+    )
     .refine((data) => data.startDate >= todayInIsrael(), {
         message: "Start date cannot be in the past",
         path: ["startDate"],

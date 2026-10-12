@@ -46,20 +46,23 @@ model User {
 }
 
 model TripRequest {
-  id             String           @id @default(uuid())
-  startDate      DateTime         @db.Date
-  endDate        DateTime         @db.Date
-  travelersCount Int
+  id               String           @id @default(uuid())
+  startDate        DateTime         @db.Date
+  endDate          DateTime         @db.Date
+  travelersCount   Int
   /// Total budget for the whole group (not per person), in `currency`.
-  budget         Int?
-  currency       String           @default("ILS")
-  kosher         KosherPreference @default(NONE)
-  needsFlights   Boolean          @default(false)
-  needsHotels    Boolean          @default(false)
-  description    String
-  status         TripStatus       @default(NEW)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  budget           Int?
+  currency         String           @default("ILS")
+  kosher           KosherPreference @default(NONE)
+  needsFlights     Boolean          @default(false)
+  needsHotels      Boolean          @default(false)
+  /// Full package: flights, lodging, attractions and entertainment.
+  /// When true, needsFlights and needsHotels are true as well.
+  needsFullPackage Boolean          @default(false)
+  description      String
+  status           TripStatus       @default(NEW)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   travelerId String
   traveler   User    @relation("TravelerTrips", fields: [travelerId], references: [id])

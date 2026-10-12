@@ -14,6 +14,22 @@ export function HomePage() {
           <p>
             שלום, <span className="font-medium">{user.name}</span>
           </p>
+          {user.role === 'TRAVELER' && (
+            <div className="flex gap-3">
+              <Link
+                to="/trips/new"
+                className="flex-1 rounded-lg bg-teal-700 py-2.5 text-center font-medium text-white hover:bg-teal-800"
+              >
+                בקשת טיול חדשה
+              </Link>
+              <Link
+                to="/trips"
+                className="flex-1 rounded-lg border border-stone-300 py-2.5 text-center font-medium hover:bg-stone-100"
+              >
+                הטיולים שלי
+              </Link>
+            </div>
+          )}
           <button
             type="button"
             onClick={logout}

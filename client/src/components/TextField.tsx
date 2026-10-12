@@ -1,20 +1,23 @@
 import type { InputHTMLAttributes } from 'react'
+import { inputClassName } from '../lib/styles'
+import { FormField } from './FormField'
 
 type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
+  id: string
   label: string
+  error?: string | undefined
 }
 
-export function TextField({ label, id, ...inputProps }: TextFieldProps) {
+export function TextField({ label, id, error, ...inputProps }: TextFieldProps) {
   return (
-    <div className="space-y-1">
-      <label htmlFor={id} className="block text-sm font-medium">
-        {label}
-      </label>
+    <FormField id={id} label={label} error={error}>
       <input
         id={id}
-        className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 focus:outline-none"
+        className={inputClassName}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
         {...inputProps}
       />
-    </div>
+    </FormField>
   )
 }
