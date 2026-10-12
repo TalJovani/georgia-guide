@@ -74,7 +74,25 @@ model TripRequest {
   guideId    String?
   guide      User?   @relation("GuideTrips", fields: [guideId], references: [id])
 
+  itineraryDays ItineraryDay[]
+
   @@index([travelerId])
   @@index([guideId])
   @@index([status])
+}
+
+/// One day of the itinerary the guide builds for a trip request.
+model ItineraryDay {
+  id        String   @id @default(uuid())
+  /// 1 = the trip's first day (startDate).
+  dayNumber Int
+  title     String
+  details   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tripRequestId String
+  tripRequest   TripRequest @relation(fields: [tripRequestId], references: [id], onDelete: Cascade)
+
+  @@unique([tripRequestId, dayNumber])
 }
