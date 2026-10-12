@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router'
 import { useAuth } from '../auth/useAuth'
 import { TextField } from '../components/TextField'
 import { ApiError } from '../lib/api'
+import { errorBoxClassName, primaryButtonClassName } from '../lib/styles'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -32,7 +33,7 @@ export function LoginPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">כניסה</h1>
+      <h1 className="font-display text-2xl text-brand">כניסה</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <TextField
@@ -57,7 +58,7 @@ export function LoginPage() {
         />
 
         {error && (
-          <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <p role="alert" className={errorBoxClassName}>
             {error}
           </p>
         )}
@@ -65,7 +66,7 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg bg-teal-700 py-2.5 font-medium text-white hover:bg-teal-800 disabled:opacity-60"
+          className={`${primaryButtonClassName} w-full`}
         >
           {submitting ? 'נכנסים...' : 'כניסה'}
         </button>
@@ -73,7 +74,7 @@ export function LoginPage() {
 
       <p className="text-center text-sm">
         אין לך חשבון?{' '}
-        <Link to="/register" className="font-medium text-teal-700 underline">
+        <Link to="/register" className="font-bold text-brand underline">
           להרשמה
         </Link>
       </p>

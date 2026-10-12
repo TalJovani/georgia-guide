@@ -1,5 +1,65 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Heebo", system-ui, "Segoe UI", Arial, sans-serif;
+/* Design tokens, taken from the "Georgia in eight scenes" mockup.
+   Colors live in plain CSS variables so dark mode can swap them,
+   and @theme inline turns each one into Tailwind classes (bg-brand, text-muted, ...). */
+:root {
+  --canvas: #f3f1f4;
+  --surface: #ffffff;
+  --ink: #1f1a24;
+  --muted: #6b6372;
+  --line: #ddd6e0;
+  --brand: #7a1f3d; /* Saperavi wine */
+  --brand-hover: #63182f;
+  --brand-soft: #f4e3ea;
+  --accent: #2f5d62; /* Caucasus slate */
+  --accent-soft: #dfeceb;
+  --ai: #b9852a; /* gold, reserved for AI suggestions */
+  --ok: #2e7d4f;
+  --danger: #b4471f;
+  --danger-soft: #fbe9e2;
+  --on-brand: #ffffff;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #17141a;
+    --surface: #221e26;
+    --ink: #efe9f2;
+    --muted: #a59cab;
+    --line: #3a3340;
+    --brand: #e0718f;
+    --brand-hover: #e98aa4;
+    --brand-soft: #3d2230;
+    --accent: #7fb9bd;
+    --accent-soft: #1f3436;
+    --ai: #e0b25c;
+    --ok: #6fcf97;
+    --danger: #f08a5d;
+    --danger-soft: #3a221a;
+    --on-brand: #17141a;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-ai: var(--ai);
+  --color-ok: var(--ok);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-on-brand: var(--on-brand);
+
+  --font-sans: "Assistant", "Segoe UI", Arial, sans-serif;
+  --font-display: "Suez One", "Assistant", Georgia, serif;
 }

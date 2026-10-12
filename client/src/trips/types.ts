@@ -13,11 +13,13 @@ export type TripRequest = {
   startDate: string
   endDate: string
   travelersCount: number
-  budget: number | null
+  budgetMin: number | null
+  budgetMax: number | null
   currency: string
   kosher: KosherPreference
   needsFlights: boolean
   needsHotels: boolean
+  needsCarRental: boolean
   needsFullPackage: boolean
   description: string
   status: TripStatus
