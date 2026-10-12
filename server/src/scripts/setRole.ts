@@ -33,7 +33,7 @@ async function main() {
 
     await prisma.user.update({ where: { id: user.id }, data: { role } });
     console.log(`${user.name} <${email}>: ${user.role} -> ${role}`);
-    console.log("They need to log out and log in again for the change to apply.");
+    console.log("The server applies it immediately; an open browser tab needs a refresh.");
 }
 
 try {

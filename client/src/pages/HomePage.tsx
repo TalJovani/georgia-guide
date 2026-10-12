@@ -21,6 +21,11 @@ export function HomePage() {
           <p>
             שלום, <span className="font-bold">{user.name}</span>
           </p>
+          {user.role === 'GUIDE' && (
+            <Link to="/guide" className={`${primaryButtonClassName} block`}>
+              ללוח המדריך
+            </Link>
+          )}
           {user.role === 'TRAVELER' && (
             <div className="flex gap-3">
               <Link to="/trips/new" className={`${primaryButtonClassName} flex-1`}>

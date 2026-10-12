@@ -26,6 +26,14 @@ export type TripRequest = {
   createdAt: string
 }
 
+export type GuideTripRequest = TripRequest & {
+  traveler: {
+    name: string
+    email: string
+    phone: string | null
+  }
+}
+
 export const kosherLabels: Record<KosherPreference, string> = {
   NONE: 'ללא',
   KOSHER_STYLE: 'סגנון כשר (בלי חזיר ופירות ים)',

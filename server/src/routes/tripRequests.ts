@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../db.js";
 import { KosherPreference } from "../generated/prisma/enums.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { requireRole } from "../middleware/requireRole.js";
 
 // Today's date (YYYY-MM-DD) in Israel, where our travelers book from.
 function todayInIsrael(): string {
@@ -54,12 +55,7 @@ export const tripRequestsRouter = Router();
 
 tripRequestsRouter.use(requireAuth);
 
-tripRequestsRouter.post("/", async (req, res) => {
-    if (req.user!.role !== "TRAVELER") {
-        res.status(403).json({ error: "Only travelers can create trip requests" });
-        return;
-    }
-
+tripRequestsRouter.post("/", requireRole("TRAVELER"), async (req, res) => {
     const parsed = createTripRequestSchema.safeParse(req.body);
     if (!parsed.success) {
         res.status(400).json({
