@@ -18,6 +18,9 @@ export const TRIP_STATUS_TRANSITIONS: Record<TripStatus, readonly TripStatus[]> 
     CANCELLED: [],
 };
 
+// The guide may edit the itinerary only while the traveler is not looking at it.
+export const ITINERARY_EDITABLE_STATUSES: readonly TripStatus[] = ["NEW", "IN_REVISION"];
+
 export function canTransition(from: TripStatus, to: TripStatus): boolean {
     return TRIP_STATUS_TRANSITIONS[from].includes(to);
 }

@@ -1,16 +1,41 @@
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../db.js";
+import { ITINERARY_EDITABLE_STATUSES } from "../lib/tripStatus.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const saveItinerarySchema = z
+    .object({
+        days: z
+            .array(
+                z.object({
+                    dayNumber: z.int().min(1),
+                    title: z.string().trim().min(1).max(200),
+                    details: z.string().trim().max(2000).optional(),
+                }),
+            )
+            .max(60),
+    })
+    .refine(
+        (data) => new Set(data.days.map((d) => d.dayNumber)).size === data.days.length,
+        { message: "Each day number may appear only once", path: ["days"] },
+    );
+
+// Trips this guide may see: assigned to them, or not picked up by anyone yet.
+function visibleToGuide(guideId: string) {
+    return { OR: [{ guideId }, { guideId: null }] };
+}
 
 export const guideRouter = Router();
 
 guideRouter.use(requireAuth, requireRole("GUIDE"));
 
-// Requests assigned to this guide, plus new ones nobody has picked up yet.
 guideRouter.get("/trip-requests", async (req, res) => {
     const tripRequests = await prisma.tripRequest.findMany({
-        where: { OR: [{ guideId: req.user!.id }, { guideId: null }] },
+        where: visibleToGuide(req.user!.id),
         orderBy: { createdAt: "desc" },
         include: {
             traveler: { select: { name: true, email: true, phone: true } },
@@ -18,4 +43,83 @@ guideRouter.get("/trip-requests", async (req, res) => {
     });
 
     res.json({ tripRequests });
+});
+
+// One trip request with its itinerary.
+guideRouter.get("/trip-requests/:id", async (req, res) => {
+    const tripRequest = await prisma.tripRequest.findFirst({
+        where: { id: req.params.id, ...visibleToGuide(req.user!.id) },
+        include: {
+            traveler: { select: { name: true, email: true, phone: true } },
+            itineraryDays: { orderBy: { dayNumber: "asc" } },
+        },
+    });
+    if (!tripRequest) {
+        res.status(404).json({ error: "Trip request not found" });
+        return;
+    }
+
+    res.json({ tripRequest });
+});
+
+// Replace the whole itinerary. Saving it also assigns the trip to this guide.
+guideRouter.put("/trip-requests/:id/itinerary", async (req, res) => {
+    const parsed = saveItinerarySchema.safeParse(req.body);
+    if (!parsed.success) {
+        res.status(400).json({
+            error: "Invalid input",
+            details: z.flattenError(parsed.error),
+        });
+        return;
+    }
+    const { days } = parsed.data;
+    const guideId = req.user!.id;
+    const tripRequestId = req.params.id;
+
+    const trip = await prisma.tripRequest.findFirst({
+        where: { id: tripRequestId, ...visibleToGuide(guideId) },
+    });
+    if (!trip) {
+        res.status(404).json({ error: "Trip request not found" });
+        return;
+    }
+    if (!ITINERARY_EDITABLE_STATUSES.includes(trip.status)) {
+        res.status(409).json({ error: "Itinerary cannot be edited in this status" });
+        return;
+    }
+
+    const tripLength = (trip.endDate.getTime() - trip.startDate.getTime()) / MS_PER_DAY + 1;
+    if (days.some((d) => d.dayNumber > tripLength)) {
+        res.status(400).json({ error: `The trip has only ${tripLength} days` });
+        return;
+    }
+
+    const itineraryDays = await prisma.$transaction(async (tx) => {
+        // Re-check status and owner in the same statement that claims the trip,
+        // in case something changed since we read it above.
+        const claimed = await tx.tripRequest.updateMany({
+            where: {
+                id: tripRequestId,
+                status: { in: [...ITINERARY_EDITABLE_STATUSES] },
+                ...visibleToGuide(guideId),
+            },
+            data: { guideId },
+        });
+        if (claimed.count === 0) return null;
+
+        await tx.itineraryDay.deleteMany({ where: { tripRequestId } });
+        await tx.itineraryDay.createMany({
+            data: days.map((d) => ({ ...d, details: d.details ?? null, tripRequestId })),
+        });
+        return tx.itineraryDay.findMany({
+            where: { tripRequestId },
+            orderBy: { dayNumber: "asc" },
+        });
+    });
+    if (!itineraryDays) {
+        res.status(409).json({ error: "Trip request changed, please reload" });
+        return;
+    }
+
+    res.json({ itineraryDays });
 });
