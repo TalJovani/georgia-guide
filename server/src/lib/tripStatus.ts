@@ -25,6 +25,13 @@ export function canTransition(from: TripStatus, to: TripStatus): boolean {
     return TRIP_STATUS_TRANSITIONS[from].includes(to);
 }
 
+// All statuses that may move to `to`, e.g. for a `status: { in: [...] }` filter.
+export function statusesThatCanMoveTo(to: TripStatus): TripStatus[] {
+    return (Object.keys(TRIP_STATUS_TRANSITIONS) as TripStatus[]).filter((from) =>
+        canTransition(from, to),
+    );
+}
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 // Whole days between the cancellation and the trip start, for the refund policy.

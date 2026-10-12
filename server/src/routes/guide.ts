@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db.js";
-import { ITINERARY_EDITABLE_STATUSES } from "../lib/tripStatus.js";
+import {
+    canTransition,
+    ITINERARY_EDITABLE_STATUSES,
+    statusesThatCanMoveTo,
+} from "../lib/tripStatus.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
 
@@ -122,4 +126,45 @@ guideRouter.put("/trip-requests/:id/itinerary", async (req, res) => {
     }
 
     res.json({ itineraryDays });
+});
+
+// Send the itinerary to the traveler: NEW / IN_REVISION -> ITINERARY_SENT.
+guideRouter.post("/trip-requests/:id/send", async (req, res) => {
+    const guideId = req.user!.id;
+    const tripRequestId = req.params.id;
+
+    // Only the guide who saved the itinerary (and so was assigned) may send it.
+    const trip = await prisma.tripRequest.findFirst({
+        where: { id: tripRequestId, guideId },
+        include: { _count: { select: { itineraryDays: true } } },
+    });
+    if (!trip) {
+        res.status(404).json({ error: "Trip request not found" });
+        return;
+    }
+    if (!canTransition(trip.status, "ITINERARY_SENT")) {
+        res.status(409).json({ error: `Cannot send an itinerary from status ${trip.status}` });
+        return;
+    }
+    if (trip._count.itineraryDays === 0) {
+        res.status(400).json({ error: "Add at least one day before sending" });
+        return;
+    }
+
+    // The status filter makes the move atomic: if two requests race,
+    // only one of them finds the trip still in an allowed status.
+    const moved = await prisma.tripRequest.updateMany({
+        where: {
+            id: tripRequestId,
+            guideId,
+            status: { in: statusesThatCanMoveTo("ITINERARY_SENT") },
+        },
+        data: { status: "ITINERARY_SENT" },
+    });
+    if (moved.count === 0) {
+        res.status(409).json({ error: "Trip request changed, please reload" });
+        return;
+    }
+
+    res.json({ status: "ITINERARY_SENT" });
 });
