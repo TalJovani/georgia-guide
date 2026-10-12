@@ -1,9 +1,12 @@
 import "dotenv/config";
 import express from "express";
 import { prisma } from "./db.js";
+import { authRouter } from "./routes/auth.js";
 
 const app = express();
 const PORT = 4000;
+
+app.use(express.json());
 
 app.get("/api/health", async (_req, res) => {
     try {
@@ -14,6 +17,8 @@ app.get("/api/health", async (_req, res) => {
         res.status(503).json({ status: "error", database: "unreachable" });
     }
 });
+
+app.use("/api/auth", authRouter);
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
