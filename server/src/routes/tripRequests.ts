@@ -16,10 +16,12 @@ const createTripRequestSchema = z
         startDate: z.iso.date(),
         endDate: z.iso.date(),
         travelersCount: z.int().min(1).max(50),
-        budget: z.int().min(0).max(10_000_000).optional(),
+        budgetMin: z.int().min(0).max(10_000_000).optional(),
+        budgetMax: z.int().min(0).max(10_000_000).optional(),
         kosher: z.enum(KosherPreference).default("NONE"),
         needsFlights: z.boolean().default(false),
         needsHotels: z.boolean().default(false),
+        needsCarRental: z.boolean().default(false),
         needsFullPackage: z.boolean().default(false),
         description: z.string().trim().min(10).max(5000),
     })
@@ -36,7 +38,17 @@ const createTripRequestSchema = z
     .refine((data) => data.endDate >= data.startDate, {
         message: "End date must be on or after the start date",
         path: ["endDate"],
-    });
+    })
+    .refine(
+        (data) =>
+            data.budgetMin === undefined ||
+            data.budgetMax === undefined ||
+            data.budgetMax >= data.budgetMin,
+        {
+            message: "Maximum budget must be at least the minimum budget",
+            path: ["budgetMax"],
+        },
+    );
 
 export const tripRequestsRouter = Router();
 
@@ -57,13 +69,14 @@ tripRequestsRouter.post("/", async (req, res) => {
         return;
     }
 
-    const { startDate, endDate, budget, ...rest } = parsed.data;
+    const { startDate, endDate, budgetMin, budgetMax, ...rest } = parsed.data;
     const tripRequest = await prisma.tripRequest.create({
         data: {
             ...rest,
             startDate: new Date(startDate),
             endDate: new Date(endDate),
-            budget: budget ?? null,
+            budgetMin: budgetMin ?? null,
+            budgetMax: budgetMax ?? null,
             travelerId: req.user!.id,
         },
     });

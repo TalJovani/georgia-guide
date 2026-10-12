@@ -50,12 +50,14 @@ model TripRequest {
   startDate        DateTime         @db.Date
   endDate          DateTime         @db.Date
   travelersCount   Int
-  /// Total budget for the whole group (not per person), in `currency`.
-  budget           Int?
+  /// Budget range for the whole group (not per person), in `currency`.
+  budgetMin        Int?
+  budgetMax        Int?
   currency         String           @default("ILS")
   kosher           KosherPreference @default(NONE)
   needsFlights     Boolean          @default(false)
   needsHotels      Boolean          @default(false)
+  needsCarRental   Boolean          @default(false)
   /// Full package: flights, lodging, attractions and entertainment.
   /// When true, needsFlights and needsHotels are true as well.
   needsFullPackage Boolean          @default(false)
