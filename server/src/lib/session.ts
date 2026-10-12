@@ -2,7 +2,7 @@ import type { CookieOptions } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { config } from "../config.js";
-import { UserRole } from "../generated/prisma/enums.js";
+import type { UserRole } from "../generated/prisma/enums.js";
 
 const SESSION_DAYS = 7;
 const JWT_ALGORITHM = "HS256";
@@ -21,13 +21,15 @@ export type SessionUser = {
     role: UserRole;
 };
 
+// The token only says WHO the user is. What they may do (their role) is
+// read fresh from the database on every request, so a role change or a
+// deleted account takes effect immediately instead of after the token expires.
 const tokenPayloadSchema = z.object({
     sub: z.string(),
-    role: z.enum(UserRole),
 });
 
-export function signSessionToken(user: SessionUser): string {
-    return jwt.sign({ sub: user.id, role: user.role }, config.jwtSecret, {
+export function signSessionToken(userId: string): string {
+    return jwt.sign({ sub: userId }, config.jwtSecret, {
         algorithm: JWT_ALGORITHM,
         expiresIn: `${SESSION_DAYS}d`,
     });
@@ -37,15 +39,14 @@ export function sessionCookieMaxAge(): number {
     return SESSION_DAYS * 24 * 60 * 60 * 1000;
 }
 
-// Returns the user from a valid token, or null if the token is missing,
+// Returns the user id from a valid token, or null if the token is missing,
 // expired, forged, or has an unexpected shape.
-export function verifySessionToken(token: string): SessionUser | null {
+export function verifySessionToken(token: string): string | null {
     try {
         const decoded = jwt.verify(token, config.jwtSecret, {
             algorithms: [JWT_ALGORITHM],
         });
-        const payload = tokenPayloadSchema.parse(decoded);
-        return { id: payload.sub, role: payload.role };
+        return tokenPayloadSchema.parse(decoded).sub;
     } catch {
         return null;
     }

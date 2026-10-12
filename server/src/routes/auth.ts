@@ -86,7 +86,7 @@ authRouter.post("/login", async (req, res) => {
         return;
     }
 
-    const token = signSessionToken({ id: user.id, role: user.role });
+    const token = signSessionToken(user.id);
     res.cookie(AUTH_COOKIE, token, {
         ...authCookieOptions,
         maxAge: sessionCookieMaxAge(),
@@ -98,16 +98,10 @@ authRouter.post("/login", async (req, res) => {
 });
 
 authRouter.get("/me", requireAuth, async (req, res) => {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findUniqueOrThrow({
         where: { id: req.user!.id },
         select: { id: true, email: true, name: true, role: true },
     });
-
-    if (!user) {
-        res.clearCookie(AUTH_COOKIE, authCookieOptions);
-        res.status(401).json({ error: "Not authenticated" });
-        return;
-    }
 
     res.json({ user });
 });
