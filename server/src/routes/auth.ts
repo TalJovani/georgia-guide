@@ -9,26 +9,32 @@ import {
     sessionCookieMaxAge,
     signSessionToken,
 } from "../lib/session.js";
+import {
+    BCRYPT_ROUNDS,
+    currentPasswordField,
+    emailField,
+    hashPassword,
+    nameField,
+    newPasswordField,
+    phoneField,
+    publicUserSelect,
+} from "../lib/userFields.js";
 import { requireAuth } from "../middleware/requireAuth.js";
-
-const BCRYPT_ROUNDS = 12;
 
 // Compared against when the email doesn't exist, so a failed login
 // takes the same time whether or not the account exists.
 const DUMMY_HASH = bcrypt.hashSync("dummy-password-for-timing", BCRYPT_ROUNDS);
 
-const emailField = z.string().trim().toLowerCase().pipe(z.email());
-
 const registerSchema = z.object({
     email: emailField,
-    password: z.string().min(8).max(72),
-    name: z.string().trim().min(1).max(100),
-    phone: z.string().trim().max(30).optional(),
+    password: newPasswordField,
+    name: nameField,
+    phone: phoneField.optional(),
 });
 
 const loginSchema = z.object({
     email: emailField,
-    password: z.string().min(1).max(72),
+    password: currentPasswordField,
 });
 
 export const authRouter = Router();
@@ -44,12 +50,12 @@ authRouter.post("/register", async (req, res) => {
     }
 
     const { email, password, name, phone } = parsed.data;
-    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const passwordHash = await hashPassword(password);
 
     try {
         const user = await prisma.user.create({
-            data: { email, passwordHash, name, phone: phone ?? null },
-            select: { id: true, email: true, name: true, role: true },
+            data: { email, passwordHash, name, phone: phone || null },
+            select: publicUserSelect,
         });
         res.status(201).json({ user });
     } catch (error) {
@@ -93,14 +99,20 @@ authRouter.post("/login", async (req, res) => {
     });
 
     res.json({
-        user: { id: user.id, email: user.email, name: user.name, role: user.role },
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            phone: user.phone,
+            role: user.role,
+        },
     });
 });
 
 authRouter.get("/me", requireAuth, async (req, res) => {
     const user = await prisma.user.findUniqueOrThrow({
         where: { id: req.user!.id },
-        select: { id: true, email: true, name: true, role: true },
+        select: publicUserSelect,
     });
 
     res.json({ user });

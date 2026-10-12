@@ -7,6 +7,11 @@ export const primaryButtonClassName =
 export const secondaryButtonClassName =
   'rounded-xl border-[1.5px] border-accent py-2.5 text-center font-bold text-accent hover:bg-accent-soft'
 
+export const dangerButtonClassName =
+  'rounded-xl border-[1.5px] border-danger py-2.5 text-center font-bold text-danger hover:bg-danger-soft disabled:opacity-60'
+
 export const cardClassName = 'rounded-xl border border-line bg-surface p-4'
 
 export const errorBoxClassName = 'rounded-xl bg-danger-soft p-3 text-sm text-danger'
+
+export const successBoxClassName = 'rounded-xl bg-ok/15 p-3 text-sm text-ok'

@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthProvider'
 import { useAuth } from './auth/useAuth'
 import { AppBar } from './components/AppBar'
 import { RequireAuth } from './components/RequireAuth'
+import { AccountPage } from './pages/AccountPage'
 import { GuideDashboardPage } from './pages/GuideDashboardPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
@@ -37,6 +38,14 @@ function AppRoutes() {
           element={
             <RequireAuth role="TRAVELER">
               <NewTripRequestPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <RequireAuth>
+              <AccountPage />
             </RequireAuth>
           }
         />

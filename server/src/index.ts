@@ -2,6 +2,7 @@ import "dotenv/config";
 import cookieParser from "cookie-parser";
 import express from "express";
 import { prisma } from "./db.js";
+import { accountRouter } from "./routes/account.js";
 import { authRouter } from "./routes/auth.js";
 import { guideRouter } from "./routes/guide.js";
 import { tripRequestsRouter } from "./routes/tripRequests.js";
@@ -23,6 +24,7 @@ app.get("/api/health", async (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/account", accountRouter);
 app.use("/api/trip-requests", tripRequestsRouter);
 app.use("/api/guide", guideRouter);
 

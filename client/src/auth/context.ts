@@ -4,6 +4,7 @@ export type User = {
   id: string
   email: string
   name: string
+  phone: string | null
   role: 'TRAVELER' | 'GUIDE'
 }
 
@@ -20,6 +21,8 @@ export type AuthContextValue = {
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
+  // After the account page changes or deletes the user on the server.
+  setUser: (user: User | null) => void
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
