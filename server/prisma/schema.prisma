@@ -50,8 +50,9 @@ model TripRequest {
   startDate      DateTime         @db.Date
   endDate        DateTime         @db.Date
   travelersCount Int
+  /// Total budget for the whole group (not per person), in `currency`.
   budget         Int?
-  currency       String           @default("USD")
+  currency       String           @default("ILS")
   kosher         KosherPreference @default(NONE)
   needsFlights   Boolean          @default(false)
   needsHotels    Boolean          @default(false)
