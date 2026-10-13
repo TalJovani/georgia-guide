@@ -1,7 +1,13 @@
-import { Router } from "express";
+import { type RequestHandler, Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db.js";
-import { KosherPreference } from "../generated/prisma/enums.js";
+import type { Prisma } from "../generated/prisma/client.js";
+import { KosherPreference, type TripStatus } from "../generated/prisma/enums.js";
+import {
+    canTransition,
+    ITINERARY_EDITABLE_STATUSES,
+    statusesThatCanMoveTo,
+} from "../lib/tripStatus.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
 
@@ -88,3 +94,70 @@ tripRequestsRouter.get("/", async (req, res) => {
 
     res.json({ tripRequests });
 });
+
+// One of my trip requests, with the itinerary once the guide has sent it.
+tripRequestsRouter.get("/:id", async (req, res) => {
+    const tripRequest = await prisma.tripRequest.findFirst({
+        where: { id: req.params.id, travelerId: req.user!.id },
+        include: {
+            guide: { select: { name: true, phone: true } },
+            itineraryDays: { orderBy: { dayNumber: "asc" } },
+        },
+    });
+    if (!tripRequest) {
+        res.status(404).json({ error: "Trip request not found" });
+        return;
+    }
+
+    // While the guide is working on it, the itinerary is a draft: don't show it.
+    if (ITINERARY_EDITABLE_STATUSES.includes(tripRequest.status)) {
+        tripRequest.itineraryDays = [];
+    }
+
+    res.json({ tripRequest });
+});
+
+// Builds a route that moves one of my trips to status `to`.
+function travelerTransition(
+    to: TripStatus,
+    extraData: () => Prisma.TripRequestUpdateManyMutationInput = () => ({}),
+): RequestHandler<{ id: string }> {
+    return async (req, res) => {
+        const travelerId = req.user!.id;
+        const id = req.params.id;
+
+        const trip = await prisma.tripRequest.findFirst({ where: { id, travelerId } });
+        if (!trip) {
+            res.status(404).json({ error: "Trip request not found" });
+            return;
+        }
+        if (!canTransition(trip.status, to)) {
+            res.status(409).json({ error: `Cannot move from ${trip.status} to ${to}` });
+            return;
+        }
+
+        const moved = await prisma.tripRequest.updateMany({
+            where: { id, travelerId, status: { in: statusesThatCanMoveTo(to) } },
+            data: { status: to, ...extraData() },
+        });
+        if (moved.count === 0) {
+            res.status(409).json({ error: "Trip request changed, please reload" });
+            return;
+        }
+
+        const tripRequest = await prisma.tripRequest.findUnique({ where: { id } });
+        res.json({ tripRequest });
+    };
+}
+
+tripRequestsRouter.post("/:id/confirm", requireRole("TRAVELER"), travelerTransition("CONFIRMED"));
+tripRequestsRouter.post(
+    "/:id/request-changes",
+    requireRole("TRAVELER"),
+    travelerTransition("IN_REVISION"),
+);
+tripRequestsRouter.post(
+    "/:id/cancel",
+    requireRole("TRAVELER"),
+    travelerTransition("CANCELLED", () => ({ cancelledAt: new Date() })),
+);
