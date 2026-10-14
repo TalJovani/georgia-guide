@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
+import { DayTabs, ItinerarySchedule } from '../components/ItinerarySchedule'
 import { TextField } from '../components/TextField'
 import { apiFetch, ApiError } from '../lib/api'
-import { dateOfTripDay, formatDate, tripLengthInDays } from '../lib/dates'
+import { formatDate, tripLengthInDays } from '../lib/dates'
 import {
   cardClassName,
   errorBoxClassName,
@@ -162,40 +163,6 @@ function TripSummary({ trip }: { trip: GuideTripDetail }) {
   )
 }
 
-// A row of buttons, one per trip day. Days that already have a plan get a dot.
-function DayTabs({
-  startDate,
-  filled,
-  selected,
-  onSelect,
-}: {
-  startDate: string
-  filled: boolean[]
-  selected: number
-  onSelect: (index: number) => void
-}) {
-  return (
-    <div role="tablist" aria-label="ימי הטיול" className="flex gap-2 overflow-x-auto pb-1">
-      {filled.map((isFilled, index) => (
-        <button
-          key={index}
-          type="button"
-          role="tab"
-          aria-selected={index === selected}
-          onClick={() => onSelect(index)}
-          className="shrink-0 rounded-xl border border-line bg-surface px-3 py-1.5 text-center text-sm aria-selected:border-accent aria-selected:font-bold aria-selected:text-accent"
-        >
-          <span className="block">
-            יום {index + 1}
-            {isFilled && <span className="mr-1 text-accent">•</span>}
-          </span>
-          <span className="block text-xs text-muted">{dateOfTripDay(startDate, index + 1)}</span>
-        </button>
-      ))}
-    </div>
-  )
-}
-
 function ItineraryEditor({
   trip,
   onChange,
@@ -279,6 +246,12 @@ function ItineraryEditor({
       <h2 className="text-lg font-bold">
         {trip.status === 'IN_REVISION' ? 'עדכון המסלול לפי בקשת המטיילים' : 'בניית המסלול'}
       </h2>
+      {trip.status === 'IN_REVISION' && trip.revisionNote && (
+        <div className={`${cardClassName} space-y-1 border-accent`}>
+          <p className="text-sm font-bold text-accent">מה המטיילים ביקשו לשנות</p>
+          <p className="text-sm whitespace-pre-line">{trip.revisionNote}</p>
+        </div>
+      )}
       <p className="text-sm text-muted">
         בחרו יום, תנו לו כותרת והוסיפו פעילויות לפי שעות. יום בלי כותרת לא יופיע במסלול.
       </p>
@@ -391,54 +364,15 @@ const viewMessages: Partial<Record<TripStatus, string>> = {
 
 function ItineraryView({ trip }: { trip: GuideTripDetail }) {
   const message = viewMessages[trip.status]
-  const length = tripLengthInDays(trip.startDate, trip.endDate)
-  const days = Array.from({ length }, (_, index) =>
-    trip.itineraryDays.find((day) => day.dayNumber === index + 1),
-  )
-  const [selected, setSelected] = useState(() => Math.max(0, days.findIndex(Boolean)))
-  const day = days[selected]
 
   return (
     <section className="space-y-3">
       {message && <p className={`${cardClassName} font-semibold text-accent`}>{message}</p>}
-
-      <DayTabs
+      <ItinerarySchedule
         startDate={trip.startDate}
-        filled={days.map(Boolean)}
-        selected={selected}
-        onSelect={setSelected}
+        endDate={trip.endDate}
+        itineraryDays={trip.itineraryDays}
       />
-
-      <div role="tabpanel" className={`${cardClassName} space-y-3`}>
-        {!day ? (
-          <p className="text-sm text-muted">אין תוכנית ליום הזה.</p>
-        ) : (
-          <>
-            <h3 className="font-display text-xl text-brand">{day.title}</h3>
-            {day.activities.length === 0 && (
-              <p className="text-sm text-muted">לא נקבעו פעילויות לפי שעות.</p>
-            )}
-            <ol className="space-y-2">
-              {day.activities.map((activity) => (
-                <li
-                  key={activity.id}
-                  className="grid grid-cols-[6.5rem_1fr] gap-3 border-r-2 border-accent pr-3"
-                >
-                  <span dir="ltr" className="text-right font-semibold text-accent">
-                    {activity.startTime}–{activity.endTime}
-                  </span>
-                  <span>
-                    {activity.title}
-                    {activity.details && (
-                      <small className="block text-muted">{activity.details}</small>
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </>
-        )}
-      </div>
     </section>
   )
 }

@@ -11,6 +11,7 @@ import { LoginPage } from './pages/LoginPage'
 import { MyTripsPage } from './pages/MyTripsPage'
 import { NewTripRequestPage } from './pages/NewTripRequestPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { TravelerTripPage } from './pages/TravelerTripPage'
 
 function AppRoutes() {
   const { loading } = useAuth()
@@ -39,6 +40,14 @@ function AppRoutes() {
           element={
             <RequireAuth role="TRAVELER">
               <NewTripRequestPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/trips/:id"
+          element={
+            <RequireAuth role="TRAVELER">
+              <TravelerTripPage />
             </RequireAuth>
           }
         />

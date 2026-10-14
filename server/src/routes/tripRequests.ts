@@ -118,10 +118,14 @@ tripRequestsRouter.get("/:id", async (req, res) => {
     res.json({ tripRequest });
 });
 
+const requestChangesSchema = z.object({
+    note: z.string().trim().min(1).max(2000),
+});
+
 // Builds a route that moves one of my trips to status `to`.
 function travelerTransition(
     to: TripStatus,
-    extraData: () => Prisma.TripRequestUpdateManyMutationInput = () => ({}),
+    extraData: (body: unknown) => Prisma.TripRequestUpdateManyMutationInput = () => ({}),
 ): RequestHandler<{ id: string }> {
     return async (req, res) => {
         const travelerId = req.user!.id;
@@ -139,7 +143,7 @@ function travelerTransition(
 
         const moved = await prisma.tripRequest.updateMany({
             where: { id, travelerId, status: { in: statusesThatCanMoveTo(to) } },
-            data: { status: to, ...extraData() },
+            data: { status: to, ...extraData(req.body) },
         });
         if (moved.count === 0) {
             res.status(409).json({ error: "Trip request changed, please reload" });
@@ -152,10 +156,25 @@ function travelerTransition(
 }
 
 tripRequestsRouter.post("/:id/confirm", requireRole("TRAVELER"), travelerTransition("CONFIRMED"));
+// The traveler must say what to change, so the guide knows what to fix.
 tripRequestsRouter.post(
     "/:id/request-changes",
     requireRole("TRAVELER"),
-    travelerTransition("IN_REVISION"),
+    (req, res, next) => {
+        const parsed = requestChangesSchema.safeParse(req.body);
+        if (!parsed.success) {
+            res.status(400).json({
+                error: "Invalid input",
+                details: z.flattenError(parsed.error),
+            });
+            return;
+        }
+        req.body = parsed.data;
+        next();
+    },
+    travelerTransition("IN_REVISION", (body) => ({
+        revisionNote: (body as z.infer<typeof requestChangesSchema>).note,
+    })),
 );
 tripRequestsRouter.post(
     "/:id/cancel",

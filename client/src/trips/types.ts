@@ -24,6 +24,8 @@ export type TripRequest = {
   needsFullPackage: boolean
   description: string
   status: TripStatus
+  // What the traveler asked to change, the last time they requested changes.
+  revisionNote: string | null
   createdAt: string
 }
 
@@ -55,8 +57,22 @@ export type GuideTripDetail = GuideTripRequest & {
   itineraryDays: ItineraryDay[]
 }
 
+// The traveler's own trip. The itinerary is empty while the guide is still working on it.
+export type TravelerTripDetail = TripRequest & {
+  guide: { name: string; phone: string | null } | null
+  itineraryDays: ItineraryDay[]
+}
+
 // Mirrors ITINERARY_EDITABLE_STATUSES on the server.
 export const itineraryEditableStatuses: readonly TripStatus[] = ['NEW', 'IN_REVISION']
+
+// Statuses the server's state machine lets move to CANCELLED.
+export const cancellableStatuses: readonly TripStatus[] = [
+  'NEW',
+  'ITINERARY_SENT',
+  'IN_REVISION',
+  'CONFIRMED',
+]
 
 export const kosherLabels: Record<KosherPreference, string> = {
   NONE: 'ללא',

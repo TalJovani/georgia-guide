@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { apiFetch } from '../lib/api'
 import { formatDate } from '../lib/dates'
-import { cardClassName, errorBoxClassName, primaryButtonClassName } from '../lib/styles'
+import {
+  cardClassName,
+  errorBoxClassName,
+  primaryButtonClassName,
+  secondaryButtonClassName,
+} from '../lib/styles'
 import { formatBudget, servicesSummary, statusPillClassName } from '../trips/format'
 import { kosherLabels, statusLabels, type TripRequest } from '../trips/types'
 
@@ -75,6 +80,9 @@ export function MyTripsPage() {
                 </div>
               )}
               <p className="line-clamp-2 text-sm">{trip.description}</p>
+              <Link to={`/trips/${trip.id}`} className={`${secondaryButtonClassName} block`}>
+                {trip.status === 'ITINERARY_SENT' ? 'המסלול מחכה לכם' : 'לפרטי הטיול'}
+              </Link>
             </li>
           )
         })}

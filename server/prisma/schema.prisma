@@ -66,6 +66,8 @@ model TripRequest {
   status           TripStatus       @default(NEW)
   /// When the trip was cancelled. Compared with startDate for the refund policy.
   cancelledAt      DateTime?
+  /// What the traveler asked to change, the last time they requested changes.
+  revisionNote     String?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
