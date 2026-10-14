@@ -20,14 +20,25 @@ import {
   type TripStatus,
 } from '../trips/types'
 
-type DayDraft = { title: string; details: string }
+// `key` only identifies the row for React; the server gives saved rows new ids.
+type ActivityDraft = { key: string; startTime: string; endTime: string; title: string; details: string }
+type DayDraft = { title: string; activities: ActivityDraft[] }
 
 // One draft per trip day, filled from what the guide already saved.
 function toDrafts(trip: GuideTripDetail): DayDraft[] {
   const length = tripLengthInDays(trip.startDate, trip.endDate)
   return Array.from({ length }, (_, index) => {
     const saved = trip.itineraryDays.find((day) => day.dayNumber === index + 1)
-    return { title: saved?.title ?? '', details: saved?.details ?? '' }
+    return {
+      title: saved?.title ?? '',
+      activities: (saved?.activities ?? []).map((activity) => ({
+        key: activity.id,
+        startTime: activity.startTime,
+        endTime: activity.endTime,
+        title: activity.title,
+        details: activity.details ?? '',
+      })),
+    }
   })
 }
 
@@ -37,10 +48,47 @@ function toPayload(drafts: DayDraft[]) {
     .map((draft, index) => ({
       dayNumber: index + 1,
       title: draft.title.trim(),
-      ...(draft.details.trim() && { details: draft.details.trim() }),
+      activities: draft.activities.map((activity) => ({
+        startTime: activity.startTime,
+        endTime: activity.endTime,
+        title: activity.title.trim(),
+        ...(activity.details.trim() && { details: activity.details.trim() }),
+      })),
     }))
     .filter((day) => day.title)
   return { days }
+}
+
+// The first thing that would stop the itinerary from saving, or null if none.
+function findProblem(drafts: DayDraft[]): { dayIndex: number; text: string } | null {
+  for (const [dayIndex, draft] of drafts.entries()) {
+    const problem = (text: string) => ({ dayIndex, text: `יום ${dayIndex + 1}: ${text}` })
+    if (!draft.title.trim() && draft.activities.length > 0) {
+      return problem('יש פעילויות אבל אין כותרת ליום')
+    }
+    for (const activity of draft.activities) {
+      if (!activity.title.trim()) return problem('לכל פעילות צריך לכתוב מה עושים')
+      if (!activity.startTime || !activity.endTime) return problem('חסרה שעה באחת הפעילויות')
+      if (activity.endTime <= activity.startTime) {
+        return problem(`שעת הסיום של "${activity.title.trim()}" צריכה להיות אחרי שעת ההתחלה`)
+      }
+    }
+  }
+  return null
+}
+
+// One hour after `time`, but never past the end of the day.
+function oneHourAfter(time: string): string {
+  const [hours, minutes] = time.split(':').map(Number)
+  if (hours >= 23) return '23:59'
+  return `${String(hours + 1).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+// A new activity starts when the latest one ends, so the guide fills the day in order.
+function newActivity(existing: ActivityDraft[]): ActivityDraft {
+  const lastEnd = existing.map((activity) => activity.endTime).sort().at(-1)
+  const startTime = lastEnd && lastEnd < '23:00' ? lastEnd : '09:00'
+  return { key: crypto.randomUUID(), startTime, endTime: oneHourAfter(startTime), title: '', details: '' }
 }
 
 export function GuideTripPage() {
@@ -114,6 +162,40 @@ function TripSummary({ trip }: { trip: GuideTripDetail }) {
   )
 }
 
+// A row of buttons, one per trip day. Days that already have a plan get a dot.
+function DayTabs({
+  startDate,
+  filled,
+  selected,
+  onSelect,
+}: {
+  startDate: string
+  filled: boolean[]
+  selected: number
+  onSelect: (index: number) => void
+}) {
+  return (
+    <div role="tablist" aria-label="ימי הטיול" className="flex gap-2 overflow-x-auto pb-1">
+      {filled.map((isFilled, index) => (
+        <button
+          key={index}
+          type="button"
+          role="tab"
+          aria-selected={index === selected}
+          onClick={() => onSelect(index)}
+          className="shrink-0 rounded-xl border border-line bg-surface px-3 py-1.5 text-center text-sm aria-selected:border-accent aria-selected:font-bold aria-selected:text-accent"
+        >
+          <span className="block">
+            יום {index + 1}
+            {isFilled && <span className="mr-1 text-accent">•</span>}
+          </span>
+          <span className="block text-xs text-muted">{dateOfTripDay(startDate, index + 1)}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function ItineraryEditor({
   trip,
   onChange,
@@ -122,17 +204,44 @@ function ItineraryEditor({
   onChange: (trip: GuideTripDetail) => void
 }) {
   const [drafts, setDrafts] = useState(() => toDrafts(trip))
+  const [selected, setSelected] = useState(0)
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
 
-  function updateDay(index: number, field: keyof DayDraft, value: string) {
-    setDrafts((prev) =>
-      prev.map((draft, i) => (i === index ? { ...draft, [field]: value } : draft)),
-    )
+  const day = drafts[selected]
+
+  function updateDay(change: (day: DayDraft) => DayDraft) {
+    setDrafts((prev) => prev.map((draft, i) => (i === selected ? change(draft) : draft)))
+  }
+
+  function updateActivity(key: string, field: keyof Omit<ActivityDraft, 'key'>, value: string) {
+    updateDay((draft) => ({
+      ...draft,
+      activities: draft.activities.map((activity) =>
+        activity.key === key ? { ...activity, [field]: value } : activity,
+      ),
+    }))
+  }
+
+  function addActivity() {
+    updateDay((draft) => ({ ...draft, activities: [...draft.activities, newActivity(draft.activities)] }))
+  }
+
+  function removeActivity(key: string) {
+    updateDay((draft) => ({
+      ...draft,
+      activities: draft.activities.filter((activity) => activity.key !== key),
+    }))
   }
 
   async function saveAndMaybeSend(send: boolean) {
     setMessage(null)
+    const problem = findProblem(drafts)
+    if (problem) {
+      setSelected(problem.dayIndex)
+      setMessage({ ok: false, text: problem.text })
+      return
+    }
     const payload = toPayload(drafts)
     if (send && payload.days.length === 0) {
       setMessage({ ok: false, text: 'מלאו לפחות יום אחד לפני השליחה' })
@@ -150,12 +259,15 @@ function ItineraryEditor({
         onChange({ ...trip, itineraryDays, status: 'ITINERARY_SENT' })
         return
       }
-      onChange({ ...trip, itineraryDays })
+      const saved = { ...trip, itineraryDays }
+      onChange(saved)
+      // Reload from the server's answer, which has each day's activities sorted by time.
+      setDrafts(toDrafts(saved))
       setMessage({ ok: true, text: 'הטיוטה נשמרה. המטיילים עוד לא רואים אותה.' })
     } catch (err) {
       let text = 'משהו השתבש, נסו שוב'
       if (err instanceof ApiError && err.status === 409) text = 'הבקשה השתנתה בינתיים. רעננו את הדף.'
-      if (err instanceof ApiError && err.status === 400) text = 'חלק מהימים לא תקינים'
+      if (err instanceof ApiError && err.status === 400) text = 'חלק מהפעילויות לא תקינות'
       setMessage({ ok: false, text })
     } finally {
       setBusy(false)
@@ -168,37 +280,80 @@ function ItineraryEditor({
         {trip.status === 'IN_REVISION' ? 'עדכון המסלול לפי בקשת המטיילים' : 'בניית המסלול'}
       </h2>
       <p className="text-sm text-muted">
-        כתבו מה עושים בכל יום. יום בלי כותרת לא יופיע במסלול.
+        בחרו יום, תנו לו כותרת והוסיפו פעילויות לפי שעות. יום בלי כותרת לא יופיע במסלול.
       </p>
 
-      <ol className="space-y-3">
-        {drafts.map((draft, index) => (
-          <li key={index} className={`${cardClassName} space-y-3`}>
-            <p className="font-display text-accent">
-              יום {index + 1}{' '}
-              <span className="font-body text-sm text-muted">
-                · {dateOfTripDay(trip.startDate, index + 1)}
-              </span>
-            </p>
-            <TextField
-              id={`day-${index + 1}-title`}
-              label="מה עושים"
-              placeholder="למשל: קאחתי, יקבים וסיגנאגי"
-              maxLength={200}
-              value={draft.title}
-              onChange={(event) => updateDay(index, 'title', event.target.value)}
-            />
-            <TextField
-              id={`day-${index + 1}-details`}
-              label="פרטים (לא חובה)"
-              placeholder="למשל: ארוחת צהריים במרתף יין"
-              maxLength={2000}
-              value={draft.details}
-              onChange={(event) => updateDay(index, 'details', event.target.value)}
-            />
-          </li>
-        ))}
-      </ol>
+      <DayTabs
+        startDate={trip.startDate}
+        filled={drafts.map((draft) => draft.title.trim() !== '')}
+        selected={selected}
+        onSelect={setSelected}
+      />
+
+      <div role="tabpanel" className={`${cardClassName} space-y-3`}>
+        <TextField
+          id={`day-${selected + 1}-title`}
+          label={`כותרת ליום ${selected + 1}`}
+          placeholder="למשל: קאחתי, יקבים וסיגנאגי"
+          maxLength={200}
+          value={day.title}
+          onChange={(event) => updateDay((draft) => ({ ...draft, title: event.target.value }))}
+        />
+
+        {day.activities.length === 0 && (
+          <p className="text-sm text-muted">עוד אין פעילויות ביום הזה.</p>
+        )}
+
+        <ol className="space-y-3">
+          {day.activities.map((activity) => (
+            <li key={activity.key} className="space-y-2 rounded-xl border border-line p-3">
+              <div className="grid grid-cols-2 gap-2">
+                <TextField
+                  id={`${activity.key}-start`}
+                  label="משעה"
+                  type="time"
+                  value={activity.startTime}
+                  onChange={(event) => updateActivity(activity.key, 'startTime', event.target.value)}
+                />
+                <TextField
+                  id={`${activity.key}-end`}
+                  label="עד שעה"
+                  type="time"
+                  value={activity.endTime}
+                  onChange={(event) => updateActivity(activity.key, 'endTime', event.target.value)}
+                />
+              </div>
+              <TextField
+                id={`${activity.key}-title`}
+                label="מה עושים"
+                placeholder="למשל: סיור בעיר העתיקה"
+                maxLength={200}
+                value={activity.title}
+                onChange={(event) => updateActivity(activity.key, 'title', event.target.value)}
+              />
+              <TextField
+                id={`${activity.key}-details`}
+                label="פרטים (לא חובה)"
+                placeholder="למשל: נקודת מפגש בלובי המלון"
+                maxLength={2000}
+                value={activity.details}
+                onChange={(event) => updateActivity(activity.key, 'details', event.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => removeActivity(activity.key)}
+                className="text-sm font-semibold text-danger"
+              >
+                מחיקת הפעילות
+              </button>
+            </li>
+          ))}
+        </ol>
+
+        <button type="button" onClick={addActivity} className={`${secondaryButtonClassName} w-full`}>
+          + הוספת פעילות
+        </button>
+      </div>
 
       {message && (
         <p role="status" className={message.ok ? successBoxClassName : errorBoxClassName}>
@@ -236,25 +391,54 @@ const viewMessages: Partial<Record<TripStatus, string>> = {
 
 function ItineraryView({ trip }: { trip: GuideTripDetail }) {
   const message = viewMessages[trip.status]
+  const length = tripLengthInDays(trip.startDate, trip.endDate)
+  const days = Array.from({ length }, (_, index) =>
+    trip.itineraryDays.find((day) => day.dayNumber === index + 1),
+  )
+  const [selected, setSelected] = useState(() => Math.max(0, days.findIndex(Boolean)))
+  const day = days[selected]
 
   return (
     <section className="space-y-3">
       {message && <p className={`${cardClassName} font-semibold text-accent`}>{message}</p>}
 
-      <ol className="space-y-2">
-        {trip.itineraryDays.map((day) => (
-          <li
-            key={day.id}
-            className={`${cardClassName} grid grid-cols-[3rem_1fr] items-center gap-2 py-2`}
-          >
-            <span className="text-center font-display text-accent">{day.dayNumber}</span>
-            <span>
-              {day.title}
-              {day.details && <small className="block text-muted">{day.details}</small>}
-            </span>
-          </li>
-        ))}
-      </ol>
+      <DayTabs
+        startDate={trip.startDate}
+        filled={days.map(Boolean)}
+        selected={selected}
+        onSelect={setSelected}
+      />
+
+      <div role="tabpanel" className={`${cardClassName} space-y-3`}>
+        {!day ? (
+          <p className="text-sm text-muted">אין תוכנית ליום הזה.</p>
+        ) : (
+          <>
+            <h3 className="font-display text-xl text-brand">{day.title}</h3>
+            {day.activities.length === 0 && (
+              <p className="text-sm text-muted">לא נקבעו פעילויות לפי שעות.</p>
+            )}
+            <ol className="space-y-2">
+              {day.activities.map((activity) => (
+                <li
+                  key={activity.id}
+                  className="grid grid-cols-[6.5rem_1fr] gap-3 border-r-2 border-accent pr-3"
+                >
+                  <span dir="ltr" className="text-right font-semibold text-accent">
+                    {activity.startTime}–{activity.endTime}
+                  </span>
+                  <span>
+                    {activity.title}
+                    {activity.details && (
+                      <small className="block text-muted">{activity.details}</small>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
+      </div>
     </section>
   )
 }

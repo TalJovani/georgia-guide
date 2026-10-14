@@ -6,10 +6,26 @@ import {
     ITINERARY_EDITABLE_STATUSES,
     statusesThatCanMoveTo,
 } from "../lib/tripStatus.js";
+import { itineraryDaysInclude } from "../lib/itinerary.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+// 24-hour "HH:MM", zero-padded so that comparing the text compares the time.
+const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use HH:MM");
+
+const activitySchema = z
+    .object({
+        startTime: timeSchema,
+        endTime: timeSchema,
+        title: z.string().trim().min(1).max(200),
+        details: z.string().trim().max(2000).optional(),
+    })
+    .refine((a) => a.endTime > a.startTime, {
+        message: "End time must be after start time",
+        path: ["endTime"],
+    });
 
 const saveItinerarySchema = z
     .object({
@@ -18,7 +34,7 @@ const saveItinerarySchema = z
                 z.object({
                     dayNumber: z.int().min(1),
                     title: z.string().trim().min(1).max(200),
-                    details: z.string().trim().max(2000).optional(),
+                    activities: z.array(activitySchema).max(30).default([]),
                 }),
             )
             .max(60),
@@ -55,7 +71,7 @@ guideRouter.get("/trip-requests/:id", async (req, res) => {
         where: { id: req.params.id, ...visibleToGuide(req.user!.id) },
         include: {
             traveler: { select: { name: true, email: true, phone: true } },
-            itineraryDays: { orderBy: { dayNumber: "asc" } },
+            itineraryDays: itineraryDaysInclude,
         },
     });
     if (!tripRequest) {
@@ -111,14 +127,21 @@ guideRouter.put("/trip-requests/:id/itinerary", async (req, res) => {
         });
         if (claimed.count === 0) return null;
 
+        // Deleting the days also deletes their activities (onDelete: Cascade).
         await tx.itineraryDay.deleteMany({ where: { tripRequestId } });
-        await tx.itineraryDay.createMany({
-            data: days.map((d) => ({ ...d, details: d.details ?? null, tripRequestId })),
-        });
-        return tx.itineraryDay.findMany({
-            where: { tripRequestId },
-            orderBy: { dayNumber: "asc" },
-        });
+        for (const day of days) {
+            await tx.itineraryDay.create({
+                data: {
+                    tripRequestId,
+                    dayNumber: day.dayNumber,
+                    title: day.title,
+                    activities: {
+                        create: day.activities.map((a) => ({ ...a, details: a.details ?? null })),
+                    },
+                },
+            });
+        }
+        return tx.itineraryDay.findMany({ where: { tripRequestId }, ...itineraryDaysInclude });
     });
     if (!itineraryDays) {
         res.status(409).json({ error: "Trip request changed, please reload" });

@@ -8,6 +8,7 @@ import {
     ITINERARY_EDITABLE_STATUSES,
     statusesThatCanMoveTo,
 } from "../lib/tripStatus.js";
+import { itineraryDaysInclude } from "../lib/itinerary.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
 
@@ -101,7 +102,7 @@ tripRequestsRouter.get("/:id", async (req, res) => {
         where: { id: req.params.id, travelerId: req.user!.id },
         include: {
             guide: { select: { name: true, phone: true } },
-            itineraryDays: { orderBy: { dayNumber: "asc" } },
+            itineraryDays: itineraryDaysInclude,
         },
     });
     if (!tripRequest) {

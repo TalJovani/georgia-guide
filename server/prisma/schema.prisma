@@ -87,12 +87,28 @@ model ItineraryDay {
   /// 1 = the trip's first day (startDate).
   dayNumber Int
   title     String
-  details   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   tripRequestId String
   tripRequest   TripRequest @relation(fields: [tripRequestId], references: [id], onDelete: Cascade)
 
+  activities ItineraryActivity[]
+
   @@unique([tripRequestId, dayNumber])
+}
+
+/// One time slot in an itinerary day, like an event in a calendar.
+model ItineraryActivity {
+  id        String  @id @default(uuid())
+  /// "HH:MM" in 24-hour time. Zero-padded, so sorting the text sorts by time.
+  startTime String
+  endTime   String
+  title     String
+  details   String?
+
+  dayId String
+  day   ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+
+  @@index([dayId])
 }

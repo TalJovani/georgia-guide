@@ -35,11 +35,20 @@ export type GuideTripRequest = TripRequest & {
   }
 }
 
+// Times are "HH:MM" in 24-hour time, sorted by startTime by the server.
+export type ItineraryActivity = {
+  id: string
+  startTime: string
+  endTime: string
+  title: string
+  details: string | null
+}
+
 export type ItineraryDay = {
   id: string
   dayNumber: number
   title: string
-  details: string | null
+  activities: ItineraryActivity[]
 }
 
 export type GuideTripDetail = GuideTripRequest & {
