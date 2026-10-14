@@ -7,6 +7,7 @@ export const statusPillClassName: Record<TripStatus, string> = {
   CONFIRMED: 'bg-ok/15 text-ok',
   IN_PROGRESS: 'bg-ok/15 text-ok',
   COMPLETED: 'bg-line text-muted',
+  CANCELLED: 'bg-danger-soft text-danger',
 }
 
 function formatMoney(amount: number, currency: string): string {

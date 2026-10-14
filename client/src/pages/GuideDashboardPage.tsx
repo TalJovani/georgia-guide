@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { Link } from 'react-router'
 import { apiFetch } from '../lib/api'
 import { formatDate } from '../lib/dates'
-import { cardClassName, errorBoxClassName } from '../lib/styles'
+import { cardClassName, errorBoxClassName, primaryButtonClassName } from '../lib/styles'
 import { formatBudget, servicesSummary, statusPillClassName } from '../trips/format'
 import {
   kosherLabels,
@@ -149,6 +150,10 @@ function GuideTripCard({ trip }: { trip: GuideTripRequest }) {
         </a>
         <span className="text-muted">נשלחה {formatDate(trip.createdAt)}</span>
       </div>
+
+      <Link to={`/guide/trips/${trip.id}`} className={`${primaryButtonClassName} block`}>
+        {trip.status === 'NEW' ? 'התחל לתכנן' : 'למסלול'}
+      </Link>
     </li>
   )
 }

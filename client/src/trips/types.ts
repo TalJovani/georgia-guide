@@ -7,6 +7,7 @@ export type TripStatus =
   | 'CONFIRMED'
   | 'IN_PROGRESS'
   | 'COMPLETED'
+  | 'CANCELLED'
 
 export type TripRequest = {
   id: string
@@ -34,6 +35,20 @@ export type GuideTripRequest = TripRequest & {
   }
 }
 
+export type ItineraryDay = {
+  id: string
+  dayNumber: number
+  title: string
+  details: string | null
+}
+
+export type GuideTripDetail = GuideTripRequest & {
+  itineraryDays: ItineraryDay[]
+}
+
+// Mirrors ITINERARY_EDITABLE_STATUSES on the server.
+export const itineraryEditableStatuses: readonly TripStatus[] = ['NEW', 'IN_REVISION']
+
 export const kosherLabels: Record<KosherPreference, string> = {
   NONE: 'ללא',
   KOSHER_STYLE: 'סגנון כשר (בלי חזיר ופירות ים)',
@@ -48,4 +63,5 @@ export const statusLabels: Record<TripStatus, string> = {
   CONFIRMED: 'נסגר',
   IN_PROGRESS: 'בטיול',
   COMPLETED: 'הסתיים',
+  CANCELLED: 'בוטל',
 }
