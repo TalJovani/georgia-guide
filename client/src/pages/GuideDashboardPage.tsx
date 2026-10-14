@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import { AiSummaryCard } from '../components/AiSummaryCard'
 import { apiFetch } from '../lib/api'
 import { formatDate } from '../lib/dates'
 import { cardClassName, errorBoxClassName, primaryButtonClassName } from '../lib/styles'
@@ -136,6 +137,8 @@ function GuideTripCard({ trip }: { trip: GuideTripRequest }) {
           ))}
         </div>
       )}
+
+      <AiSummaryCard tripId={trip.id} initial={trip} />
 
       <p className="text-sm whitespace-pre-line">{trip.description}</p>
 

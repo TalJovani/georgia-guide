@@ -9,6 +9,7 @@ import {
     statusesThatCanMoveTo,
 } from "../lib/tripStatus.js";
 import { itineraryDaysInclude } from "../lib/itinerary.js";
+import { summarizeTripRequest } from "../lib/tripSummary.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
 
@@ -58,6 +59,9 @@ const createTripRequestSchema = z
         },
     );
 
+// The AI summary is written for the guide, so travelers never get it.
+const hideAiSummary = { aiTags: true, aiSuggestion: true } as const;
+
 export const tripRequestsRouter = Router();
 
 tripRequestsRouter.use(requireAuth);
@@ -82,7 +86,11 @@ tripRequestsRouter.post("/", requireRole("TRAVELER"), async (req, res) => {
             budgetMax: budgetMax ?? null,
             travelerId: req.user!.id,
         },
+        omit: hideAiSummary,
     });
+
+    // Not awaited: the traveler gets their answer now, the summary arrives in the background.
+    void summarizeTripRequest(tripRequest.id);
 
     res.status(201).json({ tripRequest });
 });
@@ -91,6 +99,7 @@ tripRequestsRouter.get("/", async (req, res) => {
     const tripRequests = await prisma.tripRequest.findMany({
         where: { travelerId: req.user!.id },
         orderBy: { createdAt: "desc" },
+        omit: hideAiSummary,
     });
 
     res.json({ tripRequests });
@@ -100,6 +109,7 @@ tripRequestsRouter.get("/", async (req, res) => {
 tripRequestsRouter.get("/:id", async (req, res) => {
     const tripRequest = await prisma.tripRequest.findFirst({
         where: { id: req.params.id, travelerId: req.user!.id },
+        omit: hideAiSummary,
         include: {
             guide: { select: { name: true, phone: true } },
             itineraryDays: itineraryDaysInclude,
@@ -150,7 +160,10 @@ function travelerTransition(
             return;
         }
 
-        const tripRequest = await prisma.tripRequest.findUnique({ where: { id } });
+        const tripRequest = await prisma.tripRequest.findUnique({
+            where: { id },
+            omit: hideAiSummary,
+        });
         res.json({ tripRequest });
     };
 }

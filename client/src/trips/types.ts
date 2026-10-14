@@ -35,6 +35,9 @@ export type GuideTripRequest = TripRequest & {
     email: string
     phone: string | null
   }
+  // AI summary for the guide. Empty / null until it has been made.
+  aiTags: string[]
+  aiSuggestion: string | null
 }
 
 // Times are "HH:MM" in 24-hour time, sorted by startTime by the server.

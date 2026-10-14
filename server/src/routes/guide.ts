@@ -7,6 +7,7 @@ import {
     statusesThatCanMoveTo,
 } from "../lib/tripStatus.js";
 import { itineraryDaysInclude } from "../lib/itinerary.js";
+import { isTripSummaryEnabled, summarizeTripRequest } from "../lib/tripSummary.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
 
@@ -80,6 +81,30 @@ guideRouter.get("/trip-requests/:id", async (req, res) => {
     }
 
     res.json({ tripRequest });
+});
+
+// Make (or remake) the AI summary, for trips whose summary is missing.
+guideRouter.post("/trip-requests/:id/summary", async (req, res) => {
+    if (!isTripSummaryEnabled) {
+        res.status(503).json({ error: "AI summary is not configured" });
+        return;
+    }
+    const trip = await prisma.tripRequest.findFirst({
+        where: { id: req.params.id, ...visibleToGuide(req.user!.id) },
+        select: { id: true },
+    });
+    if (!trip) {
+        res.status(404).json({ error: "Trip request not found" });
+        return;
+    }
+
+    const summary = await summarizeTripRequest(trip.id);
+    if (!summary) {
+        res.status(502).json({ error: "Could not make a summary, try again later" });
+        return;
+    }
+
+    res.json(summary);
 });
 
 // Replace the whole itinerary. Saving it also assigns the trip to this guide.

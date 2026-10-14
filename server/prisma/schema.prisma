@@ -68,6 +68,10 @@ model TripRequest {
   cancelledAt      DateTime?
   /// What the traveler asked to change, the last time they requested changes.
   revisionNote     String?
+  /// AI summary of the request for the guide: short Hebrew tags, and one idea for the route.
+  /// Empty / null until the summary has been made (or if making it failed).
+  aiTags           String[]         @default([])
+  aiSuggestion     String?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 

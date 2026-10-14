@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
+import { AiSummaryCard } from '../components/AiSummaryCard'
 import { DayTabs, ItinerarySchedule } from '../components/ItinerarySchedule'
 import { TextField } from '../components/TextField'
 import { apiFetch, ApiError } from '../lib/api'
@@ -158,6 +159,7 @@ function TripSummary({ trip }: { trip: GuideTripDetail }) {
         {trip.kosher !== 'NONE' && ` · ${kosherLabels[trip.kosher]}`}
         {services.length > 0 && ` · ${services.join(', ')}`}
       </p>
+      <AiSummaryCard tripId={trip.id} initial={trip} />
       <p className="text-sm whitespace-pre-line">{trip.description}</p>
     </section>
   )
