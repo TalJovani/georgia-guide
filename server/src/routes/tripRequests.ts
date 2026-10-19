@@ -9,6 +9,7 @@ import {
     statusesThatCanMoveTo,
 } from "../lib/tripStatus.js";
 import { itineraryDaysInclude } from "../lib/itinerary.js";
+import { advanceTripsByDate } from "../lib/tripCalendar.js";
 import { summarizeTripRequest } from "../lib/tripSummary.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
@@ -96,6 +97,7 @@ tripRequestsRouter.post("/", requireRole("TRAVELER"), async (req, res) => {
 });
 
 tripRequestsRouter.get("/", async (req, res) => {
+    await advanceTripsByDate({ travelerId: req.user!.id });
     const tripRequests = await prisma.tripRequest.findMany({
         where: { travelerId: req.user!.id },
         orderBy: { createdAt: "desc" },
@@ -107,6 +109,7 @@ tripRequestsRouter.get("/", async (req, res) => {
 
 // One of my trip requests, with the itinerary once the guide has sent it.
 tripRequestsRouter.get("/:id", async (req, res) => {
+    await advanceTripsByDate({ id: req.params.id, travelerId: req.user!.id });
     const tripRequest = await prisma.tripRequest.findFirst({
         where: { id: req.params.id, travelerId: req.user!.id },
         omit: hideAiSummary,
@@ -160,6 +163,8 @@ function travelerTransition(
             return;
         }
 
+        // A trip confirmed on or after its first day is already under way.
+        await advanceTripsByDate({ id, travelerId });
         const tripRequest = await prisma.tripRequest.findUnique({
             where: { id },
             omit: hideAiSummary,

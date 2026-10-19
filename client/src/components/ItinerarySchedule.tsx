@@ -38,20 +38,25 @@ export function DayTabs({
 }
 
 // Read-only itinerary: pick a day, see its activities by the hour.
+// Opens on `initialDayIndex` if given (e.g. today), otherwise on the first planned day.
 export function ItinerarySchedule({
   startDate,
   endDate,
   itineraryDays,
+  initialDayIndex,
 }: {
   startDate: string
   endDate: string
   itineraryDays: ItineraryDay[]
+  initialDayIndex?: number
 }) {
   const length = tripLengthInDays(startDate, endDate)
   const days = Array.from({ length }, (_, index) =>
     itineraryDays.find((day) => day.dayNumber === index + 1),
   )
-  const [selected, setSelected] = useState(() => Math.max(0, days.findIndex(Boolean)))
+  const [selected, setSelected] = useState(
+    () => initialDayIndex ?? Math.max(0, days.findIndex(Boolean)),
+  )
   const day = days[selected]
 
   return (

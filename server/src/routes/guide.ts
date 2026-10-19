@@ -7,6 +7,7 @@ import {
     statusesThatCanMoveTo,
 } from "../lib/tripStatus.js";
 import { itineraryDaysInclude } from "../lib/itinerary.js";
+import { advanceTripsByDate } from "../lib/tripCalendar.js";
 import { isTripSummaryEnabled, summarizeTripRequest } from "../lib/tripSummary.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
@@ -55,6 +56,7 @@ export const guideRouter = Router();
 guideRouter.use(requireAuth, requireRole("GUIDE"));
 
 guideRouter.get("/trip-requests", async (req, res) => {
+    await advanceTripsByDate(visibleToGuide(req.user!.id));
     const tripRequests = await prisma.tripRequest.findMany({
         where: visibleToGuide(req.user!.id),
         orderBy: { createdAt: "desc" },
@@ -68,6 +70,7 @@ guideRouter.get("/trip-requests", async (req, res) => {
 
 // One trip request with its itinerary.
 guideRouter.get("/trip-requests/:id", async (req, res) => {
+    await advanceTripsByDate({ id: req.params.id, ...visibleToGuide(req.user!.id) });
     const tripRequest = await prisma.tripRequest.findFirst({
         where: { id: req.params.id, ...visibleToGuide(req.user!.id) },
         include: {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { FormField } from '../components/FormField'
 import { ItinerarySchedule } from '../components/ItinerarySchedule'
+import { TodayView } from '../components/TodayView'
 import { apiFetch, ApiError } from '../lib/api'
 import { formatDate } from '../lib/dates'
 import {
@@ -170,6 +171,7 @@ function TripBody({
         </section>
       )
     case 'IN_PROGRESS':
+      return <TodayView trip={trip} />
     case 'COMPLETED':
       return schedule
     case 'CANCELLED':
