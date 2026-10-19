@@ -42,6 +42,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  sentMessages   Message[]
   tripRequests   TripRequest[] @relation("TravelerTrips")
   guidedRequests TripRequest[] @relation("GuideTrips")
 }
@@ -80,6 +81,7 @@ model TripRequest {
   guideId    String?
   guide      User?   @relation("GuideTrips", fields: [guideId], references: [id])
 
+  messages      Message[]
   itineraryDays ItineraryDay[]
 
   @@index([travelerId])
@@ -117,4 +119,22 @@ model ItineraryActivity {
   day   ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
 
   @@index([dayId])
+}
+
+/// A chat message between the traveler and the guide of a trip.
+/// The chat is locked (read-only) once the trip is COMPLETED or CANCELLED.
+model Message {
+  id        String    @id @default(uuid())
+  body      String
+  createdAt DateTime  @default(now())
+  /// When the other side opened the chat. Null = not read yet.
+  readAt    DateTime?
+
+  tripRequestId String
+  tripRequest   TripRequest @relation(fields: [tripRequestId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
+
+  @@index([tripRequestId, createdAt])
 }
