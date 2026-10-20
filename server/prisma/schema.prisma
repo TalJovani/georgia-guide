@@ -43,6 +43,7 @@ model User {
   updatedAt    DateTime @updatedAt
 
   sentMessages   Message[]
+  reviews        Review[]
   tripRequests   TripRequest[] @relation("TravelerTrips")
   guidedRequests TripRequest[] @relation("GuideTrips")
 }
@@ -82,6 +83,7 @@ model TripRequest {
   guide      User?   @relation("GuideTrips", fields: [guideId], references: [id])
 
   messages      Message[]
+  review        Review?
   itineraryDays ItineraryDay[]
 
   @@index([travelerId])
@@ -137,4 +139,26 @@ model Message {
   sender   User   @relation(fields: [senderId], references: [id])
 
   @@index([tripRequestId, createdAt])
+}
+
+/// A public review by a traveler: about one trip (at most one per trip), or about the site in general.
+/// Shown to everyone, with the author's full name, unless the guide hid it.
+model Review {
+  id        String    @id @default(uuid())
+  /// 1 to 5 stars. Checked by the server (Prisma has no range check).
+  rating    Int
+  text      String?
+  createdAt DateTime  @default(now())
+  /// When the guide hid it as offensive. Null = shown.
+  hiddenAt  DateTime?
+
+  authorId String
+  /// Deleting the account deletes the reviews too, so the name next to them never outlives the account.
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  /// Null = a general review, not about a specific trip.
+  tripRequestId String?      @unique
+  tripRequest   TripRequest? @relation(fields: [tripRequestId], references: [id])
+
+  @@index([createdAt])
 }
