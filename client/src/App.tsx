@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { AuthProvider } from './auth/AuthProvider'
 import { useAuth } from './auth/useAuth'
+import { UnreadProvider } from './chat/UnreadProvider'
 import { AppBar } from './components/AppBar'
 import { RequireAuth } from './components/RequireAuth'
 import { AccountPage } from './pages/AccountPage'
@@ -101,11 +102,13 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <main className="min-h-screen bg-canvas px-4 py-6 text-ink">
-          <div className="mx-auto max-w-md space-y-6">
-            <AppRoutes />
-          </div>
-        </main>
+        <UnreadProvider>
+          <main className="min-h-screen bg-canvas px-4 py-6 text-ink">
+            <div className="mx-auto max-w-md space-y-6">
+              <AppRoutes />
+            </div>
+          </main>
+        </UnreadProvider>
       </AuthProvider>
     </BrowserRouter>
   )

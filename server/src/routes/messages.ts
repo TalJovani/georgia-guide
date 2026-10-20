@@ -20,6 +20,26 @@ function chatParticipant(user: SessionUser) {
     return user.role === "GUIDE" ? visibleToGuide(user.id) : { travelerId: user.id };
 }
 
+// Mounted under /api/messages: things about all of my chats at once.
+export const allChatsRouter = Router();
+
+allChatsRouter.use(requireAuth);
+
+// How many messages the other side sent me that I haven't read yet, per trip: { [tripId]: count }.
+// Trips with nothing unread are left out.
+allChatsRouter.get("/unread", async (req, res) => {
+    const user = req.user!;
+    const groups = await prisma.message.groupBy({
+        by: ["tripRequestId"],
+        where: { tripRequest: chatParticipant(user), senderId: { not: user.id }, readAt: null },
+        _count: { _all: true },
+    });
+
+    res.json({
+        unread: Object.fromEntries(groups.map((g) => [g.tripRequestId, g._count._all])),
+    });
+});
+
 // Mounted under /api/trip-requests/:id/messages, so `:id` comes from the parent path.
 export const messagesRouter = Router({ mergeParams: true });
 

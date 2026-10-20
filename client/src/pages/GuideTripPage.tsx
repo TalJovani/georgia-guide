@@ -128,7 +128,7 @@ export function GuideTripPage() {
         <>
           <TripSummary trip={trip} />
           <Link to={`/guide/trips/${trip.id}/chat`} className={`block ${secondaryButtonClassName}`}>
-            ✉ שיחה עם {trip.traveler.name}
+            ✉ צ'אט עם {trip.traveler.name}
           </Link>
           {itineraryEditableStatuses.includes(trip.status) ? (
             <ItineraryEditor trip={trip} onChange={setTrip} />

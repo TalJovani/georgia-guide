@@ -146,7 +146,7 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
           to={`/trips/${trip.id}/chat`}
           className="rounded-xl bg-accent py-2.5 text-center font-bold text-on-brand"
         >
-          ✉ הודעה למדריך
+          ✉ צ'אט עם המדריך
         </Link>
         <a
           href="tel:112"

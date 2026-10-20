@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
+import { useUnread } from '../chat/useUnread'
+import { UnreadBadge } from '../components/UnreadBadge'
 import { apiFetch } from '../lib/api'
 import { formatDate } from '../lib/dates'
 import {
@@ -16,6 +18,7 @@ type TripRequestsResponse = { tripRequests: TripRequest[] }
 export function MyTripsPage() {
   const [trips, setTrips] = useState<TripRequest[] | null>(null)
   const [error, setError] = useState('')
+  const { byTrip } = useUnread()
 
   useEffect(() => {
     apiFetch<TripRequestsResponse>('/api/trip-requests')
@@ -80,9 +83,17 @@ export function MyTripsPage() {
                 </div>
               )}
               <p className="line-clamp-2 text-sm">{trip.description}</p>
-              <Link to={`/trips/${trip.id}`} className={`${secondaryButtonClassName} block`}>
-                {trip.status === 'ITINERARY_SENT' ? 'המסלול מחכה לכם' : 'לפרטי הטיול'}
-              </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Link to={`/trips/${trip.id}`} className={`${secondaryButtonClassName} block`}>
+                  {trip.status === 'ITINERARY_SENT' ? 'המסלול מחכה לכם' : 'לפרטי הטיול'}
+                </Link>
+                <Link
+                  to={`/trips/${trip.id}/chat`}
+                  className={`${secondaryButtonClassName} flex items-center justify-center gap-1.5`}
+                >
+                  ✉ צ'אט <UnreadBadge count={byTrip[trip.id] ?? 0} />
+                </Link>
+              </div>
             </li>
           )
         })}

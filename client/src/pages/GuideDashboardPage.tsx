@@ -1,9 +1,16 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import { useUnread } from '../chat/useUnread'
 import { AiSummaryCard } from '../components/AiSummaryCard'
+import { UnreadBadge } from '../components/UnreadBadge'
 import { apiFetch } from '../lib/api'
 import { formatDate } from '../lib/dates'
-import { cardClassName, errorBoxClassName, primaryButtonClassName } from '../lib/styles'
+import {
+  cardClassName,
+  errorBoxClassName,
+  primaryButtonClassName,
+  secondaryButtonClassName,
+} from '../lib/styles'
 import { formatBudget, servicesSummary, statusPillClassName } from '../trips/format'
 import {
   kosherLabels,
@@ -106,6 +113,7 @@ function FilterChip({
 function GuideTripCard({ trip }: { trip: GuideTripRequest }) {
   const budget = formatBudget(trip)
   const services = servicesSummary(trip)
+  const { byTrip } = useUnread()
 
   return (
     <li className={`${cardClassName} space-y-3`}>
@@ -154,9 +162,17 @@ function GuideTripCard({ trip }: { trip: GuideTripRequest }) {
         <span className="text-muted">נשלחה {formatDate(trip.createdAt)}</span>
       </div>
 
-      <Link to={`/guide/trips/${trip.id}`} className={`${primaryButtonClassName} block`}>
-        {trip.status === 'NEW' ? 'התחל לתכנן' : 'למסלול'}
-      </Link>
+      <div className="grid grid-cols-2 gap-2">
+        <Link to={`/guide/trips/${trip.id}`} className={`${primaryButtonClassName} block`}>
+          {trip.status === 'NEW' ? 'התחל לתכנן' : 'למסלול'}
+        </Link>
+        <Link
+          to={`/guide/trips/${trip.id}/chat`}
+          className={`${secondaryButtonClassName} flex items-center justify-center gap-1.5`}
+        >
+          ✉ צ'אט <UnreadBadge count={byTrip[trip.id] ?? 0} />
+        </Link>
+      </div>
     </li>
   )
 }
