@@ -25,18 +25,33 @@ export const allChatsRouter = Router();
 
 allChatsRouter.use(requireAuth);
 
-// How many messages the other side sent me that I haven't read yet, per trip: { [tripId]: count }.
-// Trips with nothing unread are left out.
+// How many messages the other side sent me that I haven't read yet, per trip: { [tripId]: count },
+// and the newest of them per trip, for the browser notification. Trips with nothing unread are left out.
 allChatsRouter.get("/unread", async (req, res) => {
     const user = req.user!;
+    const unreadByOthers = {
+        tripRequest: chatParticipant(user),
+        senderId: { not: user.id },
+        readAt: null,
+    };
     const groups = await prisma.message.groupBy({
         by: ["tripRequestId"],
-        where: { tripRequest: chatParticipant(user), senderId: { not: user.id }, readAt: null },
+        where: unreadByOthers,
         _count: { _all: true },
+    });
+    // `distinct` keeps the first row of each trip, and the order makes that the newest one.
+    const newest = await prisma.message.findMany({
+        where: unreadByOthers,
+        distinct: ["tripRequestId"],
+        orderBy: [{ tripRequestId: "asc" }, { createdAt: "desc" }],
+        select: { id: true, tripRequestId: true, body: true, sender: { select: { name: true } } },
     });
 
     res.json({
         unread: Object.fromEntries(groups.map((g) => [g.tripRequestId, g._count._all])),
+        newest: Object.fromEntries(
+            newest.map((m) => [m.tripRequestId, { id: m.id, body: m.body, from: m.sender.name }]),
+        ),
     });
 });
 

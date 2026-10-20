@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import type { User } from '../auth/context'
 import { useAuth } from '../auth/useAuth'
+import { notificationsOn, notificationsSupported, setNotificationsSwitch } from '../chat/notifications'
 import { TextField } from '../components/TextField'
 import { apiFetch, ApiError } from '../lib/api'
 import {
@@ -21,6 +22,7 @@ export function AccountPage() {
     <div className="space-y-6">
       <h1 className="font-display text-2xl text-brand">החשבון שלי</h1>
       <ProfileSection user={user!} />
+      <NotificationsSection />
       <PasswordSection />
       <DeleteAccountSection />
     </div>
@@ -127,6 +129,65 @@ function ProfileSection({ user }: { user: User }) {
           {submitting ? 'שומרים...' : 'שמירת פרטים'}
         </button>
       </form>
+    </section>
+  )
+}
+
+// Pop-up notifications for new chat messages, even while looking at another tab.
+function NotificationsSection() {
+  const [permission, setPermission] = useState(() =>
+    notificationsSupported() ? Notification.permission : null,
+  )
+  const [on, setOn] = useState(notificationsOn)
+
+  // The browser only lets a site ask after the user clicked something.
+  async function enable() {
+    const answer = await Notification.requestPermission()
+    setPermission(answer)
+    if (answer === 'granted') {
+      setNotificationsSwitch(true)
+      setOn(true)
+      new Notification('Georgia Trips', { body: 'מעולה! מעכשיו תקבלו כאן התראה על כל הודעה חדשה.' })
+    }
+  }
+
+  function toggle(next: boolean) {
+    setNotificationsSwitch(next)
+    setOn(next)
+  }
+
+  return (
+    <section className={`${cardClassName} space-y-3`}>
+      <h2 className="text-lg font-bold">התראות על הודעות חדשות</h2>
+      <p className="text-sm text-muted">
+        הודעה קופצת עם שם השולח ותחילת ההודעה, גם כשאתם בלשונית אחרת. האתר צריך להיות פתוח באחת
+        הלשוניות.
+      </p>
+      {permission === null && (
+        <p className="text-sm">הדפדפן הזה לא תומך בהתראות.</p>
+      )}
+      {permission === 'denied' && (
+        <p className="text-sm">
+          ההתראות חסומות בדפדפן. כדי לאפשר אותן, לחצו על סמל המנעול ליד כתובת האתר ובחרו
+          ״התראות: אפשר״.
+        </p>
+      )}
+      {permission === 'default' && (
+        <button type="button" onClick={enable} className={`w-full ${primaryButtonClassName}`}>
+          🔔 הפעלת התראות
+        </button>
+      )}
+      {permission === 'granted' && (
+        <label className="flex items-center gap-2 text-sm font-semibold">
+          <input
+            type="checkbox"
+            checked={on}
+            onChange={(e) => toggle(e.target.checked)}
+            className="h-4 w-4 accent-brand"
+          />
+          לקבל התראות על הודעות חדשות
+        </label>
+      )}
     </section>
   )
 }
