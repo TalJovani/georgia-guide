@@ -12,6 +12,7 @@ import { MyTripsPage } from './pages/MyTripsPage'
 import { NewTripRequestPage } from './pages/NewTripRequestPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { TravelerTripPage } from './pages/TravelerTripPage'
+import { TripChatPage } from './pages/TripChatPage'
 
 function AppRoutes() {
   const { loading } = useAuth()
@@ -52,6 +53,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/trips/:id/chat"
+          element={
+            <RequireAuth role="TRAVELER">
+              <TripChatPage backTo={(tripId) => `/trips/${tripId}`} />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/account"
           element={
             <RequireAuth>
@@ -72,6 +81,14 @@ function AppRoutes() {
           element={
             <RequireAuth role="GUIDE">
               <GuideTripPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/guide/trips/:id/chat"
+          element={
+            <RequireAuth role="GUIDE">
+              <TripChatPage backTo={(tripId) => `/guide/trips/${tripId}`} />
             </RequireAuth>
           }
         />

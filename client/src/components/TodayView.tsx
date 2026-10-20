@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import { nowInGeorgia, tripDayIndex, tripLengthInDays } from '../lib/dates'
 import { cardClassName } from '../lib/styles'
 import type { ItineraryActivity, TravelerTripDetail } from '../trips/types'
@@ -132,7 +133,7 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
         )}
       </section>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2 text-sm">
         {trip.guide?.phone && (
           <a
             href={`tel:${trip.guide.phone}`}
@@ -141,6 +142,12 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
             ☎ התקשרות למדריך
           </a>
         )}
+        <Link
+          to={`/trips/${trip.id}/chat`}
+          className="rounded-xl bg-accent py-2.5 text-center font-bold text-on-brand"
+        >
+          ✉ הודעה למדריך
+        </Link>
         <a
           href="tel:112"
           className="rounded-xl border-[1.5px] border-danger bg-surface py-2.5 text-center font-bold text-danger"

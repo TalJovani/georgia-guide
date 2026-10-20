@@ -77,6 +77,11 @@ export function TravelerTripPage() {
       {trip && (
         <>
           <TripHeader trip={trip} />
+          {trip.status !== 'IN_PROGRESS' && (
+            <Link to={`/trips/${trip.id}/chat`} className={`block ${secondaryButtonClassName}`}>
+              ✉ שיחה עם המדריך
+            </Link>
+          )}
           <TripBody trip={trip} onUpdate={applyUpdate} />
           {cancellableStatuses.includes(trip.status) && (
             <CancelTrip tripId={trip.id} onUpdate={applyUpdate} />

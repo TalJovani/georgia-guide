@@ -93,3 +93,29 @@ export const statusLabels: Record<TripStatus, string> = {
   COMPLETED: 'הסתיים',
   CANCELLED: 'בוטל',
 }
+
+// One chat message of a trip. Dates arrive from the server as ISO strings.
+export type ChatMessage = {
+  id: string
+  body: string
+  createdAt: string
+  // When the other side read it. Null = not read yet.
+  readAt: string | null
+  tripRequestId: string
+  fromMe: boolean
+}
+
+// What the chat page gets from the server: the trip for the header, and its messages.
+export type TripChat = {
+  trip: {
+    id: string
+    status: TripStatus
+    startDate: string
+    endDate: string
+    traveler: { name: string }
+    guide: { name: string } | null
+  }
+  // True once the trip is over or cancelled: the chat can be read, not written in.
+  locked: boolean
+  messages: ChatMessage[]
+}

@@ -25,12 +25,23 @@ export const messagesRouter = Router({ mergeParams: true });
 
 messagesRouter.use(requireAuth);
 
-// The whole chat of one trip, oldest first. Opening it marks the other side's messages as read.
+// The whole chat of one trip, oldest first, with what the chat page shows at the top.
+// Opening it marks the other side's messages as read.
 messagesRouter.get<{ id: string }>("/", async (req, res) => {
     const user = req.user!;
     const where = { id: req.params.id, ...chatParticipant(user) };
     await advanceTripsByDate(where);
-    const trip = await prisma.tripRequest.findFirst({ where, select: { id: true, status: true } });
+    const trip = await prisma.tripRequest.findFirst({
+        where,
+        select: {
+            id: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            traveler: { select: { name: true } },
+            guide: { select: { name: true } },
+        },
+    });
     if (!trip) {
         res.status(404).json({ error: "Trip request not found" });
         return;
@@ -46,6 +57,7 @@ messagesRouter.get<{ id: string }>("/", async (req, res) => {
     });
 
     res.json({
+        trip,
         messages: messages.map(({ senderId, ...message }) => ({
             ...message,
             fromMe: senderId === user.id,

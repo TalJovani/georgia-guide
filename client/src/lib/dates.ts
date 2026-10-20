@@ -41,6 +41,15 @@ export function tripDayIndex(startDate: string, date: string): number {
   return Math.round((Date.parse(date) - Date.parse(startDate.slice(0, 10))) / MS_PER_DAY)
 }
 
+// When a chat message was sent, in the reader's own clock: "14:05" today, "19.10 14:05" before.
+export function formatMessageTime(isoDateTime: string): string {
+  const sent = new Date(isoDateTime)
+  const time = sent.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+  if (sent.toDateString() === new Date().toDateString()) return time
+  const day = sent.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' })
+  return `${day} ${time}`
+}
+
 // "2026-11-10T00:00:00.000Z" -> "10.11.2026", without timezone shifts.
 export function formatDate(isoDate: string): string {
   const [year, month, day] = isoDate.slice(0, 10).split('-')
