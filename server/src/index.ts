@@ -6,6 +6,7 @@ import { accountRouter } from "./routes/account.js";
 import { authRouter } from "./routes/auth.js";
 import { guideRouter } from "./routes/guide.js";
 import { allChatsRouter, messagesRouter } from "./routes/messages.js";
+import { guideReviewsRouter, reviewsRouter } from "./routes/reviews.js";
 import { tripRequestsRouter } from "./routes/tripRequests.js";
 
 const app = express();
@@ -29,6 +30,8 @@ app.use("/api/account", accountRouter);
 app.use("/api/messages", allChatsRouter);
 app.use("/api/trip-requests/:id/messages", messagesRouter);
 app.use("/api/trip-requests", tripRequestsRouter);
+app.use("/api/reviews", reviewsRouter);
+app.use("/api/guide/reviews", guideReviewsRouter);
 app.use("/api/guide", guideRouter);
 
 app.listen(PORT, () => {

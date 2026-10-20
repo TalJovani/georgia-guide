@@ -6,6 +6,7 @@ import { AppBar } from './components/AppBar'
 import { RequireAuth } from './components/RequireAuth'
 import { AccountPage } from './pages/AccountPage'
 import { GuideDashboardPage } from './pages/GuideDashboardPage'
+import { GuideReviewsPage } from './pages/GuideReviewsPage'
 import { GuideTripPage } from './pages/GuideTripPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
@@ -82,6 +83,14 @@ function AppRoutes() {
           element={
             <RequireAuth role="GUIDE">
               <GuideTripPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/guide/reviews"
+          element={
+            <RequireAuth role="GUIDE">
+              <GuideReviewsPage />
             </RequireAuth>
           }
         />

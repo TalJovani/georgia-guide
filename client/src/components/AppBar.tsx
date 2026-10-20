@@ -22,6 +22,11 @@ export function AppBar() {
               ✉ <UnreadBadge count={total} />
             </Link>
           )}
+          {user.role === 'GUIDE' && (
+            <Link to="/guide/reviews" className="text-ink hover:text-brand">
+              ★ ביקורות
+            </Link>
+          )}
           <Link to="/account" className="text-ink hover:text-brand">
             החשבון שלי
           </Link>

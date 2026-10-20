@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useUnread } from '../chat/useUnread'
+import { ReviewForm } from '../components/ReviewForm'
 import { UnreadBadge } from '../components/UnreadBadge'
 import { apiFetch } from '../lib/api'
 import { formatDate } from '../lib/dates'
@@ -11,7 +12,7 @@ import {
   secondaryButtonClassName,
 } from '../lib/styles'
 import { formatBudget, servicesSummary, statusPillClassName } from '../trips/format'
-import { kosherLabels, statusLabels, type TripRequest } from '../trips/types'
+import { kosherLabels, type MyReviews, statusLabels, type TripRequest } from '../trips/types'
 
 type TripRequestsResponse = { tripRequests: TripRequest[] }
 
@@ -19,12 +20,21 @@ export function MyTripsPage() {
   const [trips, setTrips] = useState<TripRequest[] | null>(null)
   const [error, setError] = useState('')
   const { byTrip } = useUnread()
+  // Trips I already reviewed. Null until loaded, so no review button flashes in and out.
+  const [reviewed, setReviewed] = useState<Set<string> | null>(null)
 
   useEffect(() => {
     apiFetch<TripRequestsResponse>('/api/trip-requests')
       .then((data) => setTrips(data.tripRequests))
       .catch(() => setError('לא הצלחנו לטעון את הבקשות. נסו לרענן.'))
+    apiFetch<MyReviews>('/api/reviews/mine')
+      .then((mine) => setReviewed(new Set(mine.reviewedTripIds)))
+      .catch(() => {})
   }, [])
+
+  function markReviewed(tripId: string) {
+    setReviewed((prev) => new Set(prev).add(tripId))
+  }
 
   return (
     <div className="space-y-6">
@@ -94,10 +104,57 @@ export function MyTripsPage() {
                   ✉ צ'אט <UnreadBadge count={byTrip[trip.id] ?? 0} />
                 </Link>
               </div>
+              {reviewableStatuses.includes(trip.status) && reviewed && (
+                <TripReview
+                  trip={trip}
+                  alreadyReviewed={reviewed.has(trip.id)}
+                  onSent={() => markReviewed(trip.id)}
+                />
+              )}
             </li>
           )
         })}
       </ul>
+    </div>
+  )
+}
+
+// A trip can be reviewed once it's over: travelled, or cancelled.
+const reviewableStatuses: TripRequest['status'][] = ['COMPLETED', 'CANCELLED']
+
+// "How was it?" under a finished trip: a button that opens the review form, then a thank-you.
+function TripReview({
+  trip,
+  alreadyReviewed,
+  onSent,
+}: {
+  trip: TripRequest
+  alreadyReviewed: boolean
+  onSent: () => void
+}) {
+  const [open, setOpen] = useState(false)
+
+  if (alreadyReviewed) {
+    return <p className="text-center text-sm font-bold text-ok">✓ תודה על הביקורת!</p>
+  }
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={`w-full ${primaryButtonClassName}`}
+      >
+        ✍ כתיבת ביקורת
+      </button>
+    )
+  }
+  return (
+    <div className="border-t border-line pt-3">
+      <ReviewForm
+        tripId={trip.id}
+        question={trip.status === 'CANCELLED' ? 'איך היה הטיפול בבקשה שלכם?' : 'איך היה?'}
+        onSent={onSent}
+      />
     </div>
   )
 }

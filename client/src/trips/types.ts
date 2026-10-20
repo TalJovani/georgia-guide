@@ -119,3 +119,21 @@ export type TripChat = {
   locked: boolean
   messages: ChatMessage[]
 }
+
+// A public review, as everyone sees it.
+export type Review = {
+  id: string
+  rating: number
+  text: string | null
+  createdAt: string
+  authorName: string
+  // Written about a trip that really happened (COMPLETED).
+  verifiedTrip: boolean
+}
+
+// The guide's list also says which reviews are hidden.
+export type GuideReview = Review & { hiddenAt: string | null }
+
+export type ReviewsResponse = { reviews: Review[]; average: number | null; count: number }
+
+export type MyReviews = { hasGeneralReview: boolean; reviewedTripIds: string[] }
