@@ -47,7 +47,7 @@ const saveItinerarySchema = z
     );
 
 // Trips this guide may see: assigned to them, or not picked up by anyone yet.
-function visibleToGuide(guideId: string) {
+export function visibleToGuide(guideId: string) {
     return { OR: [{ guideId }, { guideId: null }] };
 }
 
