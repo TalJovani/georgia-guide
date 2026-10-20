@@ -121,7 +121,12 @@ export function TripChatPage({ backTo }: { backTo: (tripId: string) => string })
               {lockedTexts[chat.trip.status] ?? "הצ'אט נסגר."}
             </p>
           ) : (
-            <SendForm tripId={id} onSent={addSent} lockedText={lockedTexts[chat.trip.status]} />
+            <SendForm
+              tripId={id}
+              onSent={addSent}
+              lockedText={lockedTexts[chat.trip.status]}
+              canSuggest={user?.role === 'GUIDE'}
+            />
           )}
         </>
       )}
@@ -168,14 +173,41 @@ function SendForm({
   tripId,
   onSent,
   lockedText,
+  canSuggest,
 }: {
   tripId: string
   onSent: (message: ChatMessage) => void
   lockedText?: string
+  // The guide can ask the AI for a draft reply.
+  canSuggest: boolean
 }) {
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
+  const [suggesting, setSuggesting] = useState(false)
+  // The text box holds an AI draft the guide hasn't sent yet: say so, so it gets read first.
+  const [isDraft, setIsDraft] = useState(false)
+
+  async function suggest() {
+    setSuggesting(true)
+    setError('')
+    try {
+      const data = await apiFetch<{ suggestion: string }>(
+        `/api/trip-requests/${tripId}/messages/suggestion`,
+        { method: 'POST' },
+      )
+      setBody(data.suggestion)
+      setIsDraft(true)
+    } catch (err) {
+      setError(
+        err instanceof ApiError && err.status === 503
+          ? 'הצעות ה־AI לא מופעלות בשרת.'
+          : 'לא הצלחנו להכין הצעה. נסו שוב בעוד רגע.',
+      )
+    } finally {
+      setSuggesting(false)
+    }
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -189,6 +221,7 @@ function SendForm({
       })
       onSent(data.message)
       setBody('')
+      setIsDraft(false)
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setError(lockedText ?? "הצ'אט נסגר או שהטיול השתנה. רעננו את הדף.")
@@ -212,22 +245,37 @@ function SendForm({
       <label htmlFor="chat-body" className="sr-only">
         הודעה
       </label>
+      {isDraft && (
+        <p className="text-xs font-bold text-ai">✦ טיוטה של AI. קראו, תקנו אם צריך, ורק אז שלחו.</p>
+      )}
       <textarea
         id="chat-body"
-        rows={3}
+        rows={isDraft ? 5 : 3}
         maxLength={MAX_MESSAGE_LENGTH}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="כתבו הודעה..."
-        className={inputClassName}
+        className={`${inputClassName} ${isDraft ? 'border-dashed border-ai' : ''}`}
       />
-      <button
-        type="submit"
-        disabled={sending || !body.trim()}
-        className={`w-full ${primaryButtonClassName}`}
-      >
-        {sending ? 'שולח...' : 'שליחה'}
-      </button>
+      <div className={canSuggest ? 'grid grid-cols-2 gap-2' : ''}>
+        {canSuggest && (
+          <button
+            type="button"
+            onClick={suggest}
+            disabled={suggesting || sending}
+            className="rounded-xl border-[1.5px] border-dashed border-ai py-2.5 text-center font-bold text-ai disabled:opacity-60"
+          >
+            {suggesting ? '✦ מנסח...' : '✦ הצעת תשובה'}
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={sending || suggesting || !body.trim()}
+          className={`w-full ${primaryButtonClassName}`}
+        >
+          {sending ? 'שולח...' : 'שליחה'}
+        </button>
+      </div>
     </form>
   )
 }

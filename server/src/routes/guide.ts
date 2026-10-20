@@ -8,7 +8,8 @@ import {
 } from "../lib/tripStatus.js";
 import { itineraryDaysInclude } from "../lib/itinerary.js";
 import { advanceTripsByDate } from "../lib/tripCalendar.js";
-import { isTripSummaryEnabled, summarizeTripRequest } from "../lib/tripSummary.js";
+import { isAiEnabled } from "../lib/ai.js";
+import { summarizeTripRequest } from "../lib/tripSummary.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
 
@@ -88,7 +89,7 @@ guideRouter.get("/trip-requests/:id", async (req, res) => {
 
 // Make (or remake) the AI summary, for trips whose summary is missing.
 guideRouter.post("/trip-requests/:id/summary", async (req, res) => {
-    if (!isTripSummaryEnabled) {
+    if (!isAiEnabled) {
         res.status(503).json({ error: "AI summary is not configured" });
         return;
     }

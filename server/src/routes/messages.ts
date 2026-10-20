@@ -3,8 +3,11 @@ import { z } from "zod";
 import { prisma } from "../db.js";
 import type { TripStatus } from "../generated/prisma/enums.js";
 import type { SessionUser } from "../lib/session.js";
+import { isAiEnabled } from "../lib/ai.js";
+import { suggestReply } from "../lib/replySuggestion.js";
 import { advanceTripsByDate } from "../lib/tripCalendar.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { requireRole } from "../middleware/requireRole.js";
 import { visibleToGuide } from "./guide.js";
 
 // Once a trip is over or cancelled, its chat stays readable but nobody can write in it.
@@ -144,4 +147,33 @@ messagesRouter.post<{ id: string }>("/", async (req, res) => {
 
     const { senderId: _senderId, ...rest } = message;
     res.status(201).json({ message: { ...rest, fromMe: true } });
+});
+
+// For the guide: an AI draft of the next reply. It's only a draft: it fills the guide's
+// text box, and nothing is sent until the guide sends it himself.
+messagesRouter.post<{ id: string }>("/suggestion", requireRole("GUIDE"), async (req, res) => {
+    if (!isAiEnabled) {
+        res.status(503).json({ error: "AI is not configured" });
+        return;
+    }
+    const user = req.user!;
+    const trip = await prisma.tripRequest.findFirst({
+        where: { id: req.params.id, ...chatParticipant(user) },
+        select: { id: true, status: true },
+    });
+    if (!trip) {
+        res.status(404).json({ error: "Trip request not found" });
+        return;
+    }
+    if (CHAT_LOCKED_STATUSES.includes(trip.status)) {
+        res.status(409).json({ error: "The chat of this trip is closed" });
+        return;
+    }
+
+    const suggestion = await suggestReply(trip.id, user.id);
+    if (!suggestion) {
+        res.status(502).json({ error: "Could not make a suggestion, try again later" });
+        return;
+    }
+    res.json({ suggestion });
 });
