@@ -136,8 +136,9 @@ model Message {
   tripRequestId String
   tripRequest   TripRequest @relation(fields: [tripRequestId], references: [id], onDelete: Cascade)
 
+  /// Deleting an account deletes the messages that user sent, also in other people's trips.
   senderId String
-  sender   User   @relation(fields: [senderId], references: [id])
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([tripRequestId, createdAt])
 }
