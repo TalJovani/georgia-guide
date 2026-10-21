@@ -77,7 +77,6 @@ const phraseGroups: { title: string; phrases: Phrase[] }[] = [
 // Every picture on the page, credited as its licence asks.
 const credits = [
   { what: 'כנסיית השילוש בגרגטי', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/w/index.php?curid=116990360', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
-  { what: 'אבנוטובאני, טביליסי', by: 'Supanut Arunoprayote', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/w/index.php?curid=149896952', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
   { what: 'טביליסי, תחילת המאה ה־20', by: 'Sergei Prokudin-Gorskii', licence: 'נחלת הכלל', page: 'https://commons.wikimedia.org/wiki/File:View_of_Havlabar_(Tbilisi),_in_the_early_1900s,_Sergei_Mikhailovich_Prokudin-Gorskii.jpg', licenceUrl: 'https://creativecommons.org/publicdomain/mark/1.0/' },
   { what: 'מרפסות בטביליסי', by: 'Morten Oddvik', licence: 'CC BY 2.0', page: 'https://commons.wikimedia.org/w/index.php?curid=3353286', licenceUrl: 'https://creativecommons.org/licenses/by/2.0/' },
   { what: 'חצ׳אפורי וחינקלי', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/wiki/File:Tbilisi,_Khachapuri_and_khinkali,_Georgian_traditional_food,_Georgia.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
@@ -191,18 +190,18 @@ export function HomePage() {
           <div ref={depthLayer} className="lp-alive__depth">
             <div className="lp-alive__breath">
               <img
-                src={photo('abanotubani-tbilisi-20230921.jpg')}
-                width={1440}
-                height={960}
-                alt="בתים צבעוניים עם מרפסות עץ מעל קשתות האבן של אבנוטובאני, טביליסי"
+                src={photo('ushguli-svaneti.jpg')}
+                width={460}
+                height={320}
+                alt="מטיילת בשמלה צבעונית מול הכפר אושגולי בסבנטי, עם מגדלי אבן ופסגות מושלגות"
               />
             </div>
           </div>
           <figcaption className="lp-alive__caption" aria-hidden="true">
             <span className="lp-ka" lang="ka" dir="ltr">
-              აბანოთუბანი
+              უშგული
             </span>
-            אבנוטובאני, טביליסי
+            אושגולי, סבנטי
           </figcaption>
         </figure>
         <h1 className="lp-hero__title">
