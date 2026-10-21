@@ -180,6 +180,9 @@ function ItineraryEditor({
   const [selected, setSelected] = useState(0)
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
+  // The activity the guide just added rises into place. Only that one: the others are already
+  // on screen, and switching days should swap the list instantly.
+  const [addedKey, setAddedKey] = useState<string | null>(null)
 
   const day = drafts[selected]
 
@@ -197,7 +200,14 @@ function ItineraryEditor({
   }
 
   function addActivity() {
-    updateDay((draft) => ({ ...draft, activities: [...draft.activities, newActivity(draft.activities)] }))
+    const activity = newActivity(day.activities)
+    updateDay((draft) => ({ ...draft, activities: [...draft.activities, activity] }))
+    setAddedKey(activity.key)
+  }
+
+  function selectDay(index: number) {
+    setSelected(index)
+    setAddedKey(null)
   }
 
   function removeActivity(key: string) {
@@ -266,7 +276,7 @@ function ItineraryEditor({
         startDate={trip.startDate}
         filled={drafts.map((draft) => draft.title.trim() !== '')}
         selected={selected}
-        onSelect={setSelected}
+        onSelect={selectDay}
       />
 
       <div role="tabpanel" className={`${cardClassName} space-y-3`}>
@@ -285,7 +295,10 @@ function ItineraryEditor({
 
         <ol className="space-y-3">
           {day.activities.map((activity) => (
-            <li key={activity.key} className="space-y-2 rounded-xl border border-line p-3">
+            <li
+              key={activity.key}
+              className={`space-y-2 rounded-xl border border-line p-3 ${activity.key === addedKey ? 'enter' : ''}`}
+            >
               <div className="grid grid-cols-2 gap-2">
                 <TextField
                   id={`${activity.key}-start`}
