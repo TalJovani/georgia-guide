@@ -133,8 +133,10 @@ accountRouter.delete("/", async (req, res) => {
         return;
     }
 
-    // Both deletes succeed together or not at all.
+    // All deletes succeed together or not at all.
     await prisma.$transaction([
+        // A guide's chats go with them, the travelers' side too. The trips stay, back to unassigned.
+        prisma.message.deleteMany({ where: { tripRequest: { guideId: userId } } }),
         prisma.tripRequest.deleteMany({ where: { travelerId: userId } }),
         prisma.user.delete({ where: { id: userId } }),
     ]);
