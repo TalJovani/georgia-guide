@@ -216,7 +216,8 @@ function ItineraryAnswer({
   return (
     <div className={`${cardClassName} space-y-3`}>
       {writingNote ? (
-        <>
+        // Only the form animates in: the buttons are what the page loads with, and going back is instant.
+        <div className="enter space-y-3">
           <FormField id="revision-note" label="מה תרצו לשנות?">
             <textarea
               id="revision-note"
@@ -246,7 +247,7 @@ function ItineraryAnswer({
               חזרה
             </button>
           </div>
-        </>
+        </div>
       ) : (
         <>
           <p className="text-sm text-muted">המסלול מתאים לכם? אשרו אותו, או בקשו מהמדריך שינויים.</p>
@@ -306,7 +307,7 @@ function CancelTrip({ tripId, onUpdate }: { tripId: string; onUpdate: (trip: Tri
   }
 
   return (
-    <div className={`${cardClassName} space-y-3 border border-danger`}>
+    <div className={`enter ${cardClassName} space-y-3 border border-danger`}>
       <p className="font-semibold">לבטל את הטיול? אי אפשר לחזור מזה.</p>
       <div className="flex gap-3">
         <button

@@ -373,7 +373,7 @@ function DeleteAccountSection() {
           מחיקת החשבון
         </button>
       ) : (
-        <form onSubmit={handleDelete} className="space-y-3">
+        <form onSubmit={handleDelete} className="enter space-y-3">
           <TextField
             id="deletePassword"
             label="כדי לאשר, הקלידו את הסיסמה שלכם"
