@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router'
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router'
 import { AuthProvider } from './auth/AuthProvider'
 import { useAuth } from './auth/useAuth'
 import { UnreadProvider } from './chat/UnreadProvider'
@@ -16,18 +16,30 @@ import { RegisterPage } from './pages/RegisterPage'
 import { TravelerTripPage } from './pages/TravelerTripPage'
 import { TripChatPage } from './pages/TripChatPage'
 
+// The app's own screens: one narrow column under the app bar.
+// The landing page is not in here: it is a full-width page with its own header.
+function AppLayout() {
+  return (
+    <main className="min-h-screen bg-canvas px-4 py-6 text-ink">
+      <div className="mx-auto max-w-md space-y-6">
+        <AppBar />
+        <Outlet />
+      </div>
+    </main>
+  )
+}
+
 function AppRoutes() {
   const { loading } = useAuth()
 
   if (loading) {
-    return <p className="text-center text-muted">טוען...</p>
+    return <p className="min-h-screen bg-canvas pt-6 text-center text-muted">טוען...</p>
   }
 
   return (
-    <>
-      <AppBar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route element={<AppLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route
@@ -102,8 +114,8 @@ function AppRoutes() {
             </RequireAuth>
           }
         />
-      </Routes>
-    </>
+      </Route>
+    </Routes>
   )
 }
 
@@ -112,11 +124,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <UnreadProvider>
-          <main className="min-h-screen bg-canvas px-4 py-6 text-ink">
-            <div className="mx-auto max-w-md space-y-6">
-              <AppRoutes />
-            </div>
-          </main>
+          <AppRoutes />
         </UnreadProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -1,0 +1,977 @@
+/* The landing page. Photographs placed like prints on a gallery wall, each at its own size and
+   position on a 12-column grid, with quiet type between them. Three close stone tones (the tuff of
+   Georgian churches) carry the page; colour comes from the photographs. Georgian place names and
+   phrases are set in their own alphabet, which Miki reads for you.
+   Everything here is scoped under .lp so the app's own screens keep their look. */
+
+.lp {
+  --bg: #eeecea;
+  --surface: #e4e1dd;
+  --ink: #333231;
+  --muted: #6b6763;
+  --accent: #5c6b54;
+  --accent-hover: #4d5a46;
+  --accent-ink: #ffffff;
+  --field: #cdc3b6;
+  --paper: #f4f2ef; /* type set on photographs */
+
+  --font-text: 'Frank Ruhl Libre', 'Noto Serif Georgian', Georgia, 'Times New Roman', serif;
+  --font-georgian: 'Noto Serif Georgian', 'Frank Ruhl Libre', Georgia, serif;
+
+  /* Five sizes, no more. */
+  --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --step-lead: clamp(1.25rem, 1rem + 1.1vw, 2.125rem);
+  --step-head: clamp(2rem, 1.3rem + 3.2vw, 4rem);
+  --step-display: clamp(3.4rem, 8.3vw, 8rem);
+
+  --margin: 6vw;
+  --gap: 1.5vw;
+  --section: clamp(7.5rem, 14vw, 15rem);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: var(--step-body);
+  line-height: 1.55;
+  overflow-x: clip;
+}
+
+/* The page behind the landing (overscroll, the strip under short screens) takes its ground. */
+:root:has(.lp) {
+  background: #eeecea;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:has(.lp) {
+    background: #1c1b1a;
+  }
+  .lp {
+    --bg: #1c1b1a;
+    --surface: #262422;
+    --ink: #e9e7e4;
+    --muted: #a8a49f;
+    --paper: #f1f0ee;
+    --accent: #a3b597;
+    --accent-hover: #b7c7ac;
+    --accent-ink: #1c1b1a;
+    --field: #2f2b27;
+  }
+}
+
+/* Resets inside :where() weigh nothing, so any single class below can override them. */
+.lp :where(*, *::before, *::after) {
+  box-sizing: border-box;
+}
+.lp :where(h1, h2, h3, p, ul, ol, figure, blockquote) {
+  margin: 0;
+}
+.lp :where(ul, ol) {
+  padding: 0;
+  list-style: none;
+}
+.lp :where(img) {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lp :where(h1, h2) {
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-wrap: balance;
+}
+.lp :where(p) {
+  text-wrap: pretty;
+}
+/* :where keeps this weak, so the button's own colour wins. */
+.lp :where(a) {
+  color: inherit;
+}
+.lp :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.lp ::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.lp-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gap);
+  padding-left: max(var(--margin), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--margin), env(safe-area-inset-right, 0px));
+}
+
+.lp-ka {
+  font-family: var(--font-georgian);
+  font-weight: 300;
+}
+
+/* Buttons and links: one flat fill, square corners, a small press. */
+.lp-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--step-small);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 200ms ease;
+}
+.lp-button:active {
+  transform: scale(0.97);
+}
+.lp-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  transition: text-decoration-color 200ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .lp-button:hover {
+    background: var(--accent-hover);
+  }
+  .lp-link:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+.lp-caption {
+  margin-top: 0.6rem;
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+
+/* Navigation: a link at the start, the name in the middle, one action at the end. */
+.lp-nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding-block: 1.25rem;
+  font-size: var(--step-small);
+}
+.lp-nav__start {
+  justify-self: start;
+  display: flex;
+  gap: 1.5rem;
+}
+.lp-nav__name {
+  font-size: var(--step-body);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+.lp-nav__end {
+  justify-self: end;
+}
+
+/* Hero: the title steps diagonally across the middle; two photographs are placed against the step. */
+/* The screen's height is fixed, so the tall photograph is cropped by the bottom edge. */
+.lp-hero {
+  grid-template-rows: 3svh auto auto auto 1fr;
+  height: max(40rem, calc(100svh - 4.5rem));
+  overflow: clip;
+}
+.lp-hero__small {
+  grid-column: 10 / 13;
+  grid-row: 2;
+  aspect-ratio: 16 / 10;
+  margin-bottom: 1.25rem;
+  overflow: clip;
+}
+/* The title is a real box on the same grid (subgrid), so its two lines can step. */
+.lp-hero__title {
+  grid-column: 2 / 13;
+  grid-row: 3 / 5;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  font-size: var(--step-display);
+}
+.lp-line {
+  display: block;
+  overflow: clip;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.lp-line > span {
+  display: block;
+}
+.lp-hero__line1 {
+  grid-column: 1 / 12;
+  grid-row: 1;
+}
+.lp-hero__line2 {
+  grid-column: 5 / 12;
+  grid-row: 2;
+  align-self: start;
+}
+.lp-hero__tall {
+  grid-column: 2 / 6;
+  grid-row: 4 / 6;
+  margin-top: 1.5rem;
+  aspect-ratio: 4 / 5;
+  overflow: clip;
+}
+.lp-hero__text {
+  grid-column: 6 / 11;
+  grid-row: 5;
+  align-self: start;
+  margin-top: 2.5rem;
+  display: grid;
+  gap: 1.75rem;
+  justify-items: start;
+}
+.lp-hero__text p {
+  max-width: 36ch;
+  font-size: var(--step-lead);
+  line-height: 1.35;
+  color: var(--muted);
+}
+.lp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  font-size: var(--step-small);
+}
+
+/* Miki: a heading and a short note, then four facts set like a printed timetable. */
+/* Miki's section sits on the middle stone, so it reads as one panel after the open hero. */
+.lp-intro {
+  padding-block: 8rem;
+  background: var(--surface);
+  row-gap: 7.5rem;
+}
+.lp-intro__head {
+  grid-column: 1 / 7;
+  font-size: var(--step-head);
+  align-self: end;
+}
+.lp-intro__note {
+  grid-column: 9 / 13;
+  align-self: end;
+  max-width: 34ch;
+}
+.lp-facts {
+  grid-column: 1 / 13;
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+}
+.lp-facts strong {
+  display: block;
+  font-size: var(--step-head);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.lp-facts span {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+.lp-intro__photo {
+  grid-column: 7 / 13;
+  margin-top: -3rem;
+}
+.lp-intro__photo .lp-frame {
+  aspect-ratio: 4 / 3;
+}
+.lp-intro__aside {
+  grid-column: 1 / 6;
+  align-self: end;
+  max-width: 36ch;
+}
+
+.lp-frame {
+  overflow: clip;
+  background: var(--surface);
+}
+
+/* Places: a two-line statement, then the list pushed to one side like a timetable. */
+.lp-places {
+  padding-top: var(--section);
+  row-gap: 6rem;
+}
+.lp-places__head {
+  grid-column: 1 / 13;
+  font-size: var(--step-head);
+  padding-inline-start: 3vw;
+}
+.lp-places__photo {
+  grid-column: 1 / 5;
+  grid-row: 2;
+  align-self: end;
+}
+.lp-places__photo .lp-frame {
+  aspect-ratio: 4 / 5;
+}
+.lp-places__label {
+  grid-column: 6 / 7;
+  grid-row: 2;
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+.lp-places__table {
+  grid-column: 7 / 13;
+  grid-row: 2;
+  border-collapse: collapse;
+  width: 100%;
+}
+.lp-places__table td {
+  padding-block: 0.8rem;
+  vertical-align: baseline;
+}
+.lp-places__table tbody + tbody tr:first-child td {
+  padding-top: 2.75rem;
+}
+.lp-kind {
+  width: 22%;
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+.lp-place strong {
+  font-weight: 500;
+}
+.lp-place span {
+  display: block;
+  font-size: var(--step-small);
+  color: var(--muted);
+  max-width: 34ch;
+}
+.lp-places__table .lp-ka {
+  text-align: left;
+  font-size: var(--step-lead);
+  line-height: 1;
+  white-space: nowrap;
+}
+.lp-places__more {
+  grid-column: 7 / 13;
+  color: var(--muted);
+  max-width: 40ch;
+}
+
+/* What Miki says for you: Hebrew phrases in three columns; the chosen one appears in Georgian. */
+.lp-say {
+  margin-top: var(--section);
+  padding-block: 9rem;
+  background: var(--field);
+  row-gap: 4rem;
+}
+.lp-say__head {
+  grid-column: 1 / 7;
+  font-size: var(--step-lead);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.lp-say__intro {
+  grid-column: 1 / 7;
+  grid-row: 2;
+  max-width: 44ch;
+}
+.lp-say__group {
+  grid-row: 3;
+}
+.lp-say__group:nth-of-type(1) {
+  grid-column: 1 / 3;
+}
+.lp-say__group:nth-of-type(2) {
+  grid-column: 3 / 5;
+}
+.lp-say__group:nth-of-type(3) {
+  grid-column: 5 / 7;
+}
+.lp-say__group h3 {
+  font-size: var(--step-body);
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+.lp-say__group li + li {
+  margin-top: 0.15rem;
+}
+.lp-say__phrase {
+  all: unset;
+  cursor: pointer;
+  display: block;
+  padding-block: 0.2rem;
+  color: var(--muted);
+  font-size: var(--step-body);
+  line-height: 1.3;
+  transition: color 180ms ease;
+}
+.lp-say__phrase[aria-pressed='true'] {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+.lp-say__phrase:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .lp-say__phrase:hover {
+    color: var(--ink);
+  }
+}
+.lp-say__shown {
+  grid-column: 8 / 13;
+  grid-row: 2 / 4;
+  align-self: start;
+  position: sticky;
+  top: 2rem;
+}
+.lp-say__ka {
+  display: block;
+  font-size: var(--step-head);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-align: right;
+}
+.lp-say__sound {
+  display: block;
+  margin-top: 1rem;
+  font-size: var(--step-lead);
+}
+.lp-say__he {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+
+/* How it works: three photographs down a falling diagonal, the words in the gaps. */
+/* The first row is only as tall as the heading, so the first photograph's extra height goes below it. */
+.lp-how {
+  padding-top: var(--section);
+  row-gap: 0;
+  grid-template-rows: min-content auto auto auto;
+}
+.lp-how__head {
+  grid-column: 7 / 13;
+  grid-row: 1;
+  font-size: var(--step-head);
+}
+.lp-stage {
+  display: contents;
+}
+.lp-stage__photo--1 {
+  grid-column: 1 / 5;
+  grid-row: 1 / 3;
+  aspect-ratio: 3 / 4;
+}
+.lp-stage__text--1 {
+  grid-column: 5 / 9;
+  grid-row: 2;
+  align-self: start;
+  margin-top: 3rem;
+}
+.lp-stage__photo--2 {
+  grid-column: 6 / 9;
+  grid-row: 3;
+  margin-top: 6rem;
+  aspect-ratio: 1;
+}
+.lp-stage__text--2 {
+  grid-column: 9 / 13;
+  grid-row: 3;
+  margin-top: 6rem;
+  align-self: start;
+}
+.lp-stage__photo--3 {
+  grid-column: 8 / 13;
+  grid-row: 4;
+  margin-top: 6rem;
+  aspect-ratio: 16 / 10;
+}
+.lp-stage__text--3 {
+  grid-column: 3 / 8;
+  grid-row: 4;
+  margin-top: 6rem;
+  align-self: start;
+  max-width: 36ch;
+}
+.lp-stage p {
+  max-width: 36ch;
+}
+.lp-stage b {
+  font-weight: 500;
+}
+
+/* What travelers say: one photograph edge to edge, the words on it. */
+.lp-voice {
+  position: relative;
+  margin-top: var(--section);
+  min-height: 90svh;
+  color: var(--paper);
+  overflow: clip;
+  display: grid;
+}
+.lp-voice__photo {
+  position: absolute;
+  inset: 0;
+}
+.lp-voice__photo img {
+  filter: brightness(0.62);
+}
+/* The text layer lies over the photograph; only its links and buttons take clicks. */
+.lp-voice__inner,
+.lp-foot__inner {
+  pointer-events: none;
+}
+.lp-voice__inner :is(a, button, form),
+.lp-foot__inner :is(a, button) {
+  pointer-events: auto;
+}
+.lp-voice__inner {
+  position: relative;
+  grid-template-rows: auto 1fr auto;
+  padding-block: 3rem 4rem;
+}
+/* The heading sits at the top of the far side, the words at the foot of the near side:
+   a diagonal across the photograph. */
+.lp-voice__head {
+  grid-column: 9 / 13;
+  text-align: end;
+  font-size: var(--step-body);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+.lp-voice__head span {
+  display: block;
+  font-weight: 400;
+}
+/* The quotation and who said it stay together, in one column at the start. */
+.lp-voice__inner {
+  grid-template-rows: auto 1fr auto auto;
+}
+.lp-voice__quote {
+  grid-column: 1 / 8;
+  grid-row: 3;
+  align-self: end;
+  font-size: var(--step-lead);
+  line-height: 1.2;
+  max-width: 24ch;
+}
+.lp-voice__who {
+  grid-column: 1 / 8;
+  grid-row: 4;
+  margin-top: 1rem;
+  font-size: var(--step-small);
+}
+.lp-voice__write {
+  grid-column: 1 / 13;
+  padding-top: 2.5rem;
+}
+.lp-voice__form {
+  grid-column: 1 / 7;
+  padding-top: 2.5rem;
+}
+
+/* The close: one plain sentence and one action on an almost empty screen. */
+.lp-close {
+  padding-block: 30svh 20svh;
+}
+.lp-close > div {
+  grid-column: 1 / 8;
+  display: grid;
+  gap: 1.5rem;
+  justify-items: start;
+}
+.lp-close h2 {
+  font-size: var(--step-lead);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  max-width: 34ch;
+}
+
+/* Footer: the last photograph, with the name across its foot. */
+.lp-foot {
+  position: relative;
+  min-height: 100svh;
+  color: var(--paper);
+  overflow: clip;
+  display: grid;
+}
+.lp-foot__photo {
+  position: absolute;
+  inset: 0;
+}
+.lp-foot__photo img {
+  filter: brightness(0.45);
+}
+.lp-foot__inner {
+  position: relative;
+  grid-template-rows: auto 1fr auto;
+  padding-block: 2rem 3.5rem;
+}
+.lp-foot__links {
+  grid-column: 1 / 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+}
+.lp-foot__about {
+  grid-column: 9 / 13;
+  justify-self: end;
+  text-align: end;
+  max-width: 28ch;
+}
+.lp-foot__name {
+  grid-column: 1 / 13;
+  grid-row: 3;
+  font-size: var(--step-display);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  direction: ltr;
+  text-align: right;
+}
+/* Credits sit on the plain ground under the last photograph, where they are easy to read. */
+.lp-credits {
+  padding-block: 2rem;
+}
+.lp-credits p {
+  grid-column: 1 / 13;
+  font-size: var(--step-small);
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 120ch;
+}
+
+/* Mid widths: three phrase columns would be too narrow, so the third goes under the first. */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .lp-say__group:nth-of-type(1) {
+    grid-column: 1 / 4;
+  }
+  .lp-say__group:nth-of-type(2) {
+    grid-column: 4 / 7;
+  }
+  .lp-say__group:nth-of-type(3) {
+    grid-column: 1 / 4;
+    grid-row: 4;
+  }
+}
+
+/* A screen taller than it is wide (a tablet held upright) would leave the fixed-height hero half
+   empty, so there the hero is as tall as what it holds. */
+@media (max-aspect-ratio: 1 / 1) {
+  .lp-hero {
+    height: auto;
+  }
+}
+
+/* Phone: its own composition. The unevenness survives as alternating widths. */
+@media (max-width: 760px) {
+  /* The same five sizes, set for a phone. */
+  .lp {
+    --margin: 20px;
+    --section: 6.5rem;
+    --step-small: 0.875rem;
+    --step-body: 1.125rem;
+    --step-lead: 1.375rem;
+    --step-head: 2.25rem;
+    --step-display: 15vw;
+  }
+  .lp-grid {
+    display: block;
+  }
+  /* On a phone the bar keeps the link and the name; the action is in the hero, one thumb away. */
+  .lp-nav {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+  .lp-nav__start {
+    gap: 1rem;
+  }
+  .lp-nav__name {
+    justify-self: end;
+  }
+  .lp-nav__end {
+    display: none;
+  }
+  .lp-hero {
+    height: auto;
+    padding-top: 1.5rem;
+  }
+  .lp-hero__small {
+    width: 46%;
+    margin-inline-start: auto;
+    margin-bottom: 1.25rem;
+  }
+  .lp-hero__title {
+    display: block;
+  }
+  .lp-hero__line2 {
+    padding-inline-start: 22vw;
+  }
+  .lp-hero__tall {
+    width: 72%;
+    margin-top: 1.5rem;
+    aspect-ratio: 4 / 5;
+  }
+  .lp-hero__text {
+    margin-top: 2rem;
+  }
+  .lp-intro__note {
+    margin-top: 1.25rem;
+  }
+  .lp-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem 1.25rem;
+    margin-top: 3.5rem;
+  }
+  .lp-facts strong {
+    font-size: var(--step-lead);
+  }
+  .lp-intro__photo {
+    margin-top: 3rem;
+  }
+  .lp-intro__aside {
+    margin-top: 1.5rem;
+  }
+
+  .lp-places__head {
+    padding-inline-start: 0;
+  }
+  .lp-places__label {
+    display: none;
+  }
+  .lp-places__table {
+    margin-top: 3rem;
+  }
+  .lp-places__table tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding-block: 0.7rem;
+  }
+  .lp-places__table td {
+    padding-block: 0;
+  }
+  .lp-places__table tbody + tbody tr:first-child {
+    padding-top: 2.25rem;
+  }
+  .lp-places__table tbody + tbody tr:first-child td {
+    padding-top: 0;
+  }
+  .lp-kind {
+    grid-column: 1 / 3;
+    width: auto;
+  }
+  .lp-place {
+    grid-column: 1;
+  }
+  .lp-places__table .lp-ka {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .lp-places__photo {
+    width: 60%;
+    margin-inline-start: auto;
+    margin-top: 2.5rem;
+  }
+  .lp-places__more {
+    margin-top: 2rem;
+  }
+
+  .lp-say {
+    padding-block: 5rem;
+  }
+  .lp-say__intro {
+    margin-top: 1rem;
+  }
+  .lp-say__shown {
+    position: static;
+    margin-block: 2.5rem;
+    min-height: 9.5rem;
+  }
+  .lp-say__group + .lp-say__group {
+    margin-top: 2.5rem;
+  }
+  .lp-say__phrase {
+    padding-block: 0.45rem;
+  }
+
+  .lp-stage__photo--1 {
+    margin-top: 2.5rem;
+    aspect-ratio: 4 / 3;
+  }
+  .lp-stage__photo--2 {
+    width: 62%;
+    margin-inline-start: auto;
+    margin-top: 3.5rem;
+  }
+  .lp-stage__photo--3 {
+    width: 78%;
+    margin-top: 3.5rem;
+  }
+  .lp-stage__text--1,
+  .lp-stage__text--2,
+  .lp-stage__text--3 {
+    margin-top: 1.25rem;
+  }
+  .lp-stage__text--2 {
+    width: 62%;
+    margin-inline-start: auto;
+  }
+
+  .lp-voice {
+    min-height: 80svh;
+  }
+  .lp-voice__inner {
+    display: flex;
+    flex-direction: column;
+    padding-block: 2rem 2.5rem;
+  }
+  .lp-voice__quote {
+    margin-top: auto;
+  }
+  .lp-voice__who {
+    margin-top: 1rem;
+    text-align: start;
+    align-self: start;
+  }
+
+  .lp-close {
+    padding-block: 20svh 14svh;
+  }
+
+  .lp-foot {
+    min-height: 88svh;
+  }
+  .lp-foot__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .lp-foot__about {
+    text-align: start;
+  }
+  .lp-foot__name {
+    margin-top: auto;
+  }
+}
+
+/* Motion. Hidden states exist only when motion is welcome and the page script is running. */
+@media (prefers-reduced-motion: no-preference) {
+  .lp.is-live .lp-hero [data-line] {
+    transform: translateY(105%);
+    animation: lp-line 900ms var(--ease-expo) forwards;
+    animation-delay: calc(120ms + var(--i) * 110ms);
+  }
+  .lp.is-live .lp-hero [data-load] {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: lp-rise 600ms var(--ease-out) forwards;
+    animation-delay: var(--d, 500ms);
+  }
+  .lp.is-live .lp-hero [data-open] {
+    clip-path: inset(100% 0 0 0);
+    animation: lp-open 1100ms var(--ease-in-out) forwards;
+    animation-delay: var(--d, 150ms);
+  }
+  .lp.is-live .lp-hero [data-open] img {
+    transform: scale(1.1);
+    animation: lp-settle 1600ms var(--ease-expo) forwards;
+    animation-delay: var(--d, 150ms);
+  }
+
+  .lp.is-live [data-reveal] {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 700ms var(--ease-out),
+      transform 900ms var(--ease-out);
+    transition-delay: var(--d, 0ms);
+  }
+  .lp.is-live [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Photographs develop: a fade while the picture settles from a slight enlargement. */
+  .lp.is-live [data-shutter] {
+    opacity: 0;
+    transition: opacity 700ms var(--ease-out);
+    transition-delay: var(--d, 0ms);
+  }
+  .lp.is-live [data-shutter] img {
+    transform: scale(1.12);
+    transition: transform 1300ms var(--ease-soft);
+    transition-delay: var(--d, 0ms);
+  }
+  .lp.is-live [data-shutter].is-in {
+    opacity: 1;
+  }
+  .lp.is-live [data-shutter].is-in img {
+    transform: none;
+  }
+
+  /* The mountains drift slowly while their section passes. */
+  @supports (animation-timeline: view()) {
+    .lp-voice__photo img {
+      animation: lp-drift linear both;
+      animation-timeline: view();
+    }
+  }
+
+  .lp-say__ka,
+  .lp-say__sound {
+    animation: lp-swap 450ms var(--ease-out);
+  }
+}
+
+@keyframes lp-line {
+  to {
+    transform: none;
+  }
+}
+@keyframes lp-rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lp-open {
+  to {
+    clip-path: inset(0);
+  }
+}
+@keyframes lp-settle {
+  to {
+    transform: none;
+  }
+}
+@keyframes lp-drift {
+  from {
+    transform: scale(1.12) translateY(-4%);
+  }
+  to {
+    transform: scale(1.12) translateY(4%);
+  }
+}
+@keyframes lp-swap {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
