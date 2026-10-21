@@ -216,6 +216,51 @@
   margin-bottom: 1.25rem;
   overflow: clip;
 }
+
+/* A photograph that feels alive: layers inside a clipped window, one motion each.
+   The picture is held slightly enlarged, so moving it never shows an edge. */
+.lp-alive {
+  position: relative;
+}
+.lp-alive__depth,
+.lp-alive__breath {
+  width: 100%;
+  height: 100%;
+}
+.lp-alive__depth {
+  will-change: transform;
+}
+.lp-alive__breath {
+  transform: scale(1.12);
+  transition: scale 900ms var(--ease-out);
+}
+/* The place's name rises from the bottom edge when you point at the picture. */
+.lp-alive__caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.6rem;
+  padding: 0.55rem 0.75rem;
+  background: rgb(20 19 18 / 0.55);
+  color: var(--paper);
+  font-size: var(--step-small);
+  line-height: 1.3;
+  transform: translateY(101%);
+  transition: transform 450ms var(--ease-out);
+}
+.lp-alive__caption .lp-ka {
+  font-size: var(--step-body);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lp-alive:hover .lp-alive__breath {
+    scale: 1.06;
+  }
+  .lp-alive:hover .lp-alive__caption {
+    transform: none;
+  }
+}
 /* The title is a real box on the same grid (subgrid), so its two lines can step. */
 .lp-hero__title {
   grid-column: 2 / 13;
@@ -949,6 +994,28 @@
     transform: none;
   }
 
+  /* The small photograph breathes: a slow push in and across, then back. */
+  .lp-alive__breath {
+    animation: lp-breathe 16s ease-in-out infinite alternate;
+  }
+
+  /* Depth on scroll: the small photograph rises faster than the page, the tall one lags behind,
+     so the hero reads as layers. Listed after the load animations so both run. */
+  @supports (animation-timeline: scroll()) {
+    .lp.is-live .lp-hero .lp-hero__small[data-open] {
+      animation:
+        lp-open 1100ms var(--ease-in-out) var(--d, 150ms) forwards,
+        lp-float-up linear both;
+      animation-timeline: auto, scroll(root);
+    }
+    .lp.is-live .lp-hero .lp-hero__tall[data-open] {
+      animation:
+        lp-open 1100ms var(--ease-in-out) var(--d, 150ms) forwards,
+        lp-float-down linear both;
+      animation-timeline: auto, scroll(root);
+    }
+  }
+
   /* The mountains drift slowly while their section passes. */
   @supports (animation-timeline: view()) {
     .lp-voice__photo img {
@@ -963,14 +1030,57 @@
   }
 }
 
-/* Less motion: the button still changes colour on hover, at once, without the sweep. */
+/* Less motion: the button still changes colour on hover, at once, without the sweep;
+   the photograph stays still and its name fades in instead of rising. */
 @media (prefers-reduced-motion: reduce) {
+  .lp-alive__breath {
+    transition: none;
+  }
+  .lp-alive:hover .lp-alive__breath {
+    scale: none;
+  }
+  .lp-alive__caption {
+    transform: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .lp-alive:hover .lp-alive__caption {
+    opacity: 1;
+  }
   .lp-button::before,
   .lp-button__arrow {
     transition: none;
   }
   .lp-button:hover .lp-button__arrow {
     transform: none;
+  }
+}
+
+@keyframes lp-breathe {
+  from {
+    transform: scale(1.12) translate(1.2%, 0.8%);
+  }
+  to {
+    transform: scale(1.2) translate(-1.2%, -0.8%);
+  }
+}
+/* Scroll-linked: the movement happens over the first tenth of the page, then holds. */
+@keyframes lp-float-up {
+  0% {
+    translate: 0 0;
+  }
+  12%,
+  100% {
+    translate: 0 -90px;
+  }
+}
+@keyframes lp-float-down {
+  0% {
+    translate: 0 0;
+  }
+  12%,
+  100% {
+    translate: 0 45px;
   }
 }
 

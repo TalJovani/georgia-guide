@@ -115,21 +115,95 @@ function useReveal() {
   return root
 }
 
+// Depth: while the mouse moves over the hero, the view inside the small photograph shifts a few
+// pixels the other way, like looking through a window. A spring follows the mouse instead of
+// jumping to it, so the picture has weight. Mouse only, and never when less motion is asked for.
+// The transform is written straight to the element: no React state, no re-render per frame.
+function useWindowDepth() {
+  const area = useRef<HTMLElement>(null)
+  const layer = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const zone = area.current
+    const el = layer.current
+    if (!zone || !el) return
+    if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const target = { x: 0, y: 0 }
+    const pos = { x: 0, y: 0 }
+    const speed = { x: 0, y: 0 }
+    let frame = 0
+
+    // A damped spring: pulled toward the target, slowed by friction, stopped when it has settled.
+    const step = () => {
+      for (const axis of ['x', 'y'] as const) {
+        speed[axis] = (speed[axis] + (target[axis] - pos[axis]) * 0.06) * 0.82
+        pos[axis] += speed[axis]
+      }
+      el.style.transform = `translate3d(${pos.x.toFixed(2)}px, ${pos.y.toFixed(2)}px, 0)`
+      const moving =
+        Math.abs(speed.x) + Math.abs(speed.y) > 0.01 ||
+        Math.abs(target.x - pos.x) + Math.abs(target.y - pos.y) > 0.05
+      frame = moving ? requestAnimationFrame(step) : 0
+    }
+    const kick = () => {
+      if (!frame) frame = requestAnimationFrame(step)
+    }
+
+    const onMove = (event: PointerEvent) => {
+      const box = el.getBoundingClientRect()
+      const nx = (event.clientX - (box.left + box.width / 2)) / (window.innerWidth / 2)
+      const ny = (event.clientY - (box.top + box.height / 2)) / (window.innerHeight / 2)
+      target.x = Math.max(-1, Math.min(1, nx)) * -12
+      target.y = Math.max(-1, Math.min(1, ny)) * -9
+      kick()
+    }
+    const onLeave = () => {
+      target.x = 0
+      target.y = 0
+      kick()
+    }
+
+    zone.addEventListener('pointermove', onMove)
+    zone.addEventListener('pointerleave', onLeave)
+    return () => {
+      zone.removeEventListener('pointermove', onMove)
+      zone.removeEventListener('pointerleave', onLeave)
+      cancelAnimationFrame(frame)
+    }
+  }, [])
+
+  return [area, layer] as const
+}
+
 export function HomePage() {
   const root = useReveal()
+  const [depthArea, depthLayer] = useWindowDepth()
 
   return (
     <div ref={root} className="lp">
       <LandingNav />
 
-      <header className="lp-grid lp-hero">
-        <figure className="lp-hero__small" data-open style={delay(350)}>
-          <img
-            src={photo('abanotubani-tbilisi-20230921.jpg')}
-            width={1440}
-            height={960}
-            alt="בתים צבעוניים עם מרפסות עץ מעל קשתות האבן של אבנוטובאני, טביליסי"
-          />
+      <header ref={depthArea} className="lp-grid lp-hero">
+        {/* Three layers, one motion each: the mouse spring, the slow breath, the load settle. */}
+        <figure className="lp-hero__small lp-alive" data-open style={delay(350)}>
+          <div ref={depthLayer} className="lp-alive__depth">
+            <div className="lp-alive__breath">
+              <img
+                src={photo('abanotubani-tbilisi-20230921.jpg')}
+                width={1440}
+                height={960}
+                alt="בתים צבעוניים עם מרפסות עץ מעל קשתות האבן של אבנוטובאני, טביליסי"
+              />
+            </div>
+          </div>
+          <figcaption className="lp-alive__caption" aria-hidden="true">
+            <span className="lp-ka" lang="ka" dir="ltr">
+              აბანოთუბანი
+            </span>
+            אבנוטובאני, טביליסי
+          </figcaption>
         </figure>
         <h1 className="lp-hero__title">
           <span className="lp-line lp-hero__line1">
