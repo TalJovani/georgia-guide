@@ -364,23 +364,20 @@ function LandingNav() {
 // The one thing to do next, named for whoever is looking.
 function PrimaryAction() {
   const { user } = useAuth()
-  if (user?.role === 'GUIDE') {
-    return (
-      <Link to="/guide" className="lp-button">
-        ללוח המדריך
-      </Link>
-    )
-  }
-  if (user?.role === 'TRAVELER') {
-    return (
-      <Link to="/trips/new" className="lp-button">
-        בקשת טיול חדשה
-      </Link>
-    )
-  }
+  const [to, label] =
+    user?.role === 'GUIDE'
+      ? ['/guide', 'ללוח המדריך']
+      : user?.role === 'TRAVELER'
+        ? ['/trips/new', 'בקשת טיול חדשה']
+        : ['/register', 'בואו נתכנן טיול']
+
+  // The arrow points forward (left, in Hebrew) and steps ahead on hover. Decoration only.
   return (
-    <Link to="/register" className="lp-button">
-      בואו נתכנן טיול
+    <Link to={to} className="lp-button">
+      {label}
+      <span className="lp-button__arrow" aria-hidden="true">
+        ←
+      </span>
     </Link>
   )
 }
