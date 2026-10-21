@@ -4,6 +4,7 @@ import { prisma } from "../db.js";
 import type { TripStatus } from "../generated/prisma/enums.js";
 import type { SessionUser } from "../lib/session.js";
 import { isAiEnabled } from "../lib/ai.js";
+import { pushToUsers } from "../lib/push.js";
 import { suggestReply } from "../lib/replySuggestion.js";
 import { advanceTripsByDate } from "../lib/tripCalendar.js";
 import { requireAuth } from "../middleware/requireAuth.js";
@@ -147,7 +148,41 @@ messagesRouter.post<{ id: string }>("/", async (req, res) => {
 
     const { senderId: _senderId, ...rest } = message;
     res.status(201).json({ message: { ...rest, fromMe: true } });
+
+    // In the background, after answering: the sender doesn't wait for the push services.
+    void notifyOtherSide(trip.id, user, message.body);
 });
+
+// Push the new message to the other side of the chat: the traveler, or the trip's guide.
+// A trip no guide has picked up yet goes to every guide, as they all see it.
+async function notifyOtherSide(tripId: string, sender: SessionUser, body: string) {
+    try {
+        const trip = await prisma.tripRequest.findUnique({
+            where: { id: tripId },
+            select: { travelerId: true, guideId: true },
+        });
+        const from = await prisma.user.findUnique({ where: { id: sender.id }, select: { name: true } });
+        if (!trip || !from) return;
+
+        const toGuides = sender.role === "TRAVELER";
+        const recipients = !toGuides
+            ? [trip.travelerId]
+            : trip.guideId
+              ? [trip.guideId]
+              : (await prisma.user.findMany({ where: { role: "GUIDE" }, select: { id: true } })).map(
+                    (g) => g.id,
+                );
+
+        await pushToUsers(recipients, {
+            title: from.name,
+            body: body.length > 200 ? `${body.slice(0, 200)}…` : body,
+            url: toGuides ? `/guide/trips/${tripId}/chat` : `/trips/${tripId}/chat`,
+            tag: `chat-${tripId}`,
+        });
+    } catch (err) {
+        console.error(`Push for a new message in trip ${tripId} failed:`, err);
+    }
+}
 
 // For the guide: an AI draft of the next reply. It's only a draft: it fills the guide's
 // text box, and nothing is sent until the guide sends it himself.

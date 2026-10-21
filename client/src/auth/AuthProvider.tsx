@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { disablePush } from '../chat/notifications'
 import { apiFetch } from '../lib/api'
 import { AuthContext, type RegisterData, type User } from './context'
 
@@ -32,6 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function logout() {
+    // While still signed in, so the server lets us remove this browser's push subscription.
+    await disablePush().catch(() => {})
     await apiFetch<void>('/api/auth/logout', { method: 'POST' })
     setUser(null)
   }

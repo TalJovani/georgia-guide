@@ -6,6 +6,7 @@ import { accountRouter } from "./routes/account.js";
 import { authRouter } from "./routes/auth.js";
 import { guideRouter } from "./routes/guide.js";
 import { allChatsRouter, messagesRouter } from "./routes/messages.js";
+import { pushRouter } from "./routes/push.js";
 import { guideReviewsRouter, reviewsRouter } from "./routes/reviews.js";
 import { tripRequestsRouter } from "./routes/tripRequests.js";
 
@@ -28,6 +29,7 @@ app.get("/api/health", async (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/account", accountRouter);
 app.use("/api/messages", allChatsRouter);
+app.use("/api/push", pushRouter);
 app.use("/api/trip-requests/:id/messages", messagesRouter);
 app.use("/api/trip-requests", tripRequestsRouter);
 app.use("/api/reviews", reviewsRouter);

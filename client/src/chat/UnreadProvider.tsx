@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { useAuth } from '../auth/useAuth'
 import { apiFetch } from '../lib/api'
 import { UnreadContext } from './context'
-import { notificationsOn } from './notifications'
+import { claimPushSubscription, notificationsOn } from './notifications'
 
 // How often to ask the server about new messages.
 const POLL_EVERY_MS = 15_000
@@ -63,6 +63,11 @@ export function UnreadProvider({ children }: { children: ReactNode }) {
       // A missed check is fine: the next one comes in a few seconds.
       .catch(() => {})
   }, [])
+
+  // Keep this browser's push subscription on the server for whoever is signed in.
+  useEffect(() => {
+    if (user) claimPushSubscription().catch(() => {})
+  }, [user])
 
   useEffect(() => {
     if (!user) return

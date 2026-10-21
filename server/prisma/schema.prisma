@@ -42,10 +42,11 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  sentMessages   Message[]
-  reviews        Review[]
-  tripRequests   TripRequest[] @relation("TravelerTrips")
-  guidedRequests TripRequest[] @relation("GuideTrips")
+  sentMessages      Message[]
+  reviews           Review[]
+  pushSubscriptions PushSubscription[]
+  tripRequests      TripRequest[]      @relation("TravelerTrips")
+  guidedRequests    TripRequest[]      @relation("GuideTrips")
 }
 
 model TripRequest {
@@ -161,4 +162,21 @@ model Review {
   tripRequest   TripRequest? @relation(fields: [tripRequestId], references: [id])
 
   @@index([createdAt])
+}
+
+/// One browser where a user turned on push notifications. The browser's push service gives
+/// the endpoint and keys; the server sends each new chat message there, encrypted.
+model PushSubscription {
+  id        String   @id @default(uuid())
+  /// The address at the browser's push service. Unique: one row per browser.
+  endpoint  String   @unique
+  /// The browser's keys for encrypting what we send it.
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

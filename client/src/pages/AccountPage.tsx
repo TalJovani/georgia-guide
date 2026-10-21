@@ -1,8 +1,16 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import type { User } from '../auth/context'
 import { useAuth } from '../auth/useAuth'
-import { notificationsOn, notificationsSupported, setNotificationsSwitch } from '../chat/notifications'
+import {
+  disablePush,
+  enablePush,
+  notificationsOn,
+  notificationsSupported,
+  pushIsOn,
+  pushSupported,
+  setNotificationsSwitch,
+} from '../chat/notifications'
 import { TextField } from '../components/TextField'
 import { apiFetch, ApiError } from '../lib/api'
 import {
@@ -133,61 +141,95 @@ function ProfileSection({ user }: { user: User }) {
   )
 }
 
-// Pop-up notifications for new chat messages, even while looking at another tab.
+// Notifications for new chat messages. Push when the browser and server support it (works
+// with the site closed); otherwise the open page pops them up itself.
 function NotificationsSection() {
   const [permission, setPermission] = useState(() =>
     notificationsSupported() ? Notification.permission : null,
   )
-  const [on, setOn] = useState(notificationsOn)
+  const [pushOn, setPushOn] = useState(false)
+  const [inPageOn, setInPageOn] = useState(notificationsOn)
+  const [busy, setBusy] = useState(false)
+  const [note, setNote] = useState('')
 
-  // The browser only lets a site ask after the user clicked something.
-  async function enable() {
-    const answer = await Notification.requestPermission()
-    setPermission(answer)
-    if (answer === 'granted') {
-      setNotificationsSwitch(true)
-      setOn(true)
-      new Notification('Georgia Trips', { body: 'מעולה! מעכשיו תקבלו כאן התראה על כל הודעה חדשה.' })
+  useEffect(() => {
+    pushIsOn()
+      .then(setPushOn)
+      .catch(() => {})
+  }, [])
+
+  // The browser only lets a site ask for permission after the user clicked something.
+  async function turnOn() {
+    setBusy(true)
+    setNote('')
+    try {
+      if (!pushSupported()) throw new Error('No push in this browser')
+      await enablePush()
+      setPushOn(true)
+      const registration = await navigator.serviceWorker.ready
+      await registration.showNotification('Georgia Trips', {
+        body: 'מעולה! מעכשיו תקבלו התראה על כל הודעה חדשה, גם כשהאתר סגור.',
+      })
+    } catch (err) {
+      // No push: the open page will notify instead. Say why, so a real failure isn't hidden.
+      const expected = !pushSupported() || (err instanceof ApiError && err.status === 503)
+      if (!expected) console.error('Turning on push failed:', err)
+      const answer = await Notification.requestPermission()
+      if (answer === 'granted') {
+        setNotificationsSwitch(true)
+        setInPageOn(true)
+        setNote(
+          expected
+            ? 'ההתראות יגיעו כל עוד האתר פתוח באחת הלשוניות.'
+            : `ההרשמה ל־Push נכשלה (${err instanceof Error ? err.message : String(err)}), אז בינתיים ההתראות יגיעו רק כשהאתר פתוח.`,
+        )
+        new Notification('Georgia Trips', { body: 'מעולה! מעכשיו תקבלו כאן התראה על כל הודעה חדשה.' })
+      }
+    } finally {
+      setPermission(Notification.permission)
+      setBusy(false)
     }
   }
 
-  function toggle(next: boolean) {
-    setNotificationsSwitch(next)
-    setOn(next)
+  async function turnOff() {
+    setBusy(true)
+    setNote('')
+    await disablePush().catch(() => {})
+    setNotificationsSwitch(false)
+    setPushOn(false)
+    setInPageOn(false)
+    setBusy(false)
   }
+
+  const on = pushOn || inPageOn
 
   return (
     <section className={`${cardClassName} space-y-3`}>
       <h2 className="text-lg font-bold">התראות על הודעות חדשות</h2>
       <p className="text-sm text-muted">
-        הודעה קופצת עם שם השולח ותחילת ההודעה, גם כשאתם בלשונית אחרת. האתר צריך להיות פתוח באחת
-        הלשוניות.
+        הודעה קופצת עם שם השולח ותחילת ההודעה, גם כשאתם בלשונית אחרת או כשהאתר סגור.
       </p>
-      {permission === null && (
-        <p className="text-sm">הדפדפן הזה לא תומך בהתראות.</p>
-      )}
+      {permission === null && <p className="text-sm">הדפדפן הזה לא תומך בהתראות.</p>}
       {permission === 'denied' && (
         <p className="text-sm">
           ההתראות חסומות בדפדפן. כדי לאפשר אותן, לחצו על סמל המנעול ליד כתובת האתר ובחרו
           ״התראות: אפשר״.
         </p>
       )}
-      {permission === 'default' && (
-        <button type="button" onClick={enable} className={`w-full ${primaryButtonClassName}`}>
-          🔔 הפעלת התראות
-        </button>
-      )}
-      {permission === 'granted' && (
+      {permission !== null && permission !== 'denied' && (
         <label className="flex items-center gap-2 text-sm font-semibold">
           <input
+            id="notify-new-messages"
             type="checkbox"
             checked={on}
-            onChange={(e) => toggle(e.target.checked)}
+            disabled={busy}
+            onChange={(e) => (e.target.checked ? turnOn() : turnOff())}
             className="h-4 w-4 accent-brand"
           />
-          לקבל התראות על הודעות חדשות
+          {busy ? 'רגע...' : 'לקבל התראות על הודעות חדשות'}
         </label>
       )}
+      {note && <p className="text-sm text-muted">{note}</p>}
     </section>
   )
 }
