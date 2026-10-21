@@ -1,3 +1,4 @@
+import { ArrowRight, Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Stars } from '../components/Stars'
@@ -34,7 +35,7 @@ export function GuideReviewsPage() {
   return (
     <div className="space-y-5">
       <Link to="/guide" className="text-sm font-semibold text-accent">
-        → חזרה ללוח המדריך
+        <ArrowRight className="icon" /> חזרה ללוח המדריך
       </Link>
       <h1 className="font-display text-2xl text-brand">ביקורות</h1>
       <p className="text-sm text-muted">
@@ -53,7 +54,7 @@ export function GuideReviewsPage() {
         {reviews?.map((review) => (
           <li
             key={review.id}
-            className={`${cardClassName} space-y-1.5 ${review.hiddenAt ? 'border-dashed opacity-60' : ''}`}
+            className={`${cardClassName} space-y-1.5 ${review.hiddenAt ? 'border border-dashed border-line opacity-60' : ''}`}
           >
             <div className="flex items-center justify-between gap-2">
               <strong>{review.authorName}</strong>
@@ -62,7 +63,7 @@ export function GuideReviewsPage() {
             {review.text && <p className="text-sm whitespace-pre-line">{review.text}</p>}
             <p className="flex flex-wrap gap-x-2 text-xs text-muted">
               <span>{formatDate(review.createdAt)}</span>
-              {review.verifiedTrip && <span className="font-bold text-ok">✓ טיול מאומת</span>}
+              {review.verifiedTrip && <span className="font-bold text-ok"><Check className="icon" /> טיול מאומת</span>}
               {review.hiddenAt && <span className="font-bold text-danger">מוסתרת</span>}
             </p>
             <button

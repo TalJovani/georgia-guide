@@ -1,3 +1,4 @@
+import { ArrowRight, MessageCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { AiSummaryCard } from '../components/AiSummaryCard'
@@ -113,7 +114,7 @@ export function GuideTripPage() {
   return (
     <div className="space-y-5">
       <Link to="/guide" className="text-sm font-semibold text-accent">
-        → חזרה ללוח המדריך
+        <ArrowRight className="icon" /> חזרה ללוח המדריך
       </Link>
 
       {error && (
@@ -128,7 +129,7 @@ export function GuideTripPage() {
         <>
           <TripSummary trip={trip} />
           <Link to={`/guide/trips/${trip.id}/chat`} className={`block ${secondaryButtonClassName}`}>
-            ✉ צ'אט עם {trip.traveler.name}
+            <MessageCircle className="icon" /> צ'אט עם {trip.traveler.name}
           </Link>
           {itineraryEditableStatuses.includes(trip.status) ? (
             <ItineraryEditor trip={trip} onChange={setTrip} />
@@ -252,7 +253,7 @@ function ItineraryEditor({
         {trip.status === 'IN_REVISION' ? 'עדכון המסלול לפי בקשת המטיילים' : 'בניית המסלול'}
       </h2>
       {trip.status === 'IN_REVISION' && trip.revisionNote && (
-        <div className={`${cardClassName} space-y-1 border-accent`}>
+        <div className={`${cardClassName} space-y-1 border border-accent`}>
           <p className="text-sm font-bold text-accent">מה המטיילים ביקשו לשנות</p>
           <p className="text-sm whitespace-pre-line">{trip.revisionNote}</p>
         </div>

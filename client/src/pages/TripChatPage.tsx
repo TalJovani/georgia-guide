@@ -1,3 +1,4 @@
+import { ArrowRight, Check, CheckCheck, Siren, Sparkles } from 'lucide-react'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useAuth } from '../auth/useAuth'
@@ -76,7 +77,7 @@ export function TripChatPage({ backTo }: { backTo: (tripId: string) => string })
   return (
     <div className="space-y-4">
       <Link to={backTo(id)} className="text-sm font-semibold text-accent">
-        → חזרה לטיול
+        <ArrowRight className="icon" /> חזרה לטיול
       </Link>
 
       {error && (
@@ -108,9 +109,9 @@ export function TripChatPage({ backTo }: { backTo: (tripId: string) => string })
           {user?.role === 'TRAVELER' && chat.trip.status === 'IN_PROGRESS' && (
             <a
               href="tel:112"
-              className="block rounded-xl border-[1.5px] border-danger bg-surface py-2 text-center text-sm font-bold text-danger"
+              className="press block rounded-xl border-[1.5px] border-danger bg-surface py-2 text-center text-sm font-bold text-danger"
             >
-              ! מקרה חירום? חייגו 112
+              <Siren className="icon" /> מקרה חירום? חייגו 112
             </a>
           )}
 
@@ -136,6 +137,9 @@ export function TripChatPage({ backTo }: { backTo: (tripId: string) => string })
 
 function MessageList({ messages }: { messages: ChatMessage[] }) {
   const endRef = useRef<HTMLLIElement>(null)
+  // The messages that were there when the chat opened. Only messages added after that
+  // rise into place; the history just shows, it didn't "arrive" now.
+  const [initialIds] = useState(() => new Set(messages.map((m) => m.id)))
 
   // Scroll to the newest message whenever one is added.
   useEffect(() => {
@@ -151,7 +155,7 @@ function MessageList({ messages }: { messages: ChatMessage[] }) {
       {messages.map((message) => (
         <li
           key={message.id}
-          className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+          className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${initialIds.has(message.id) ? '' : 'enter'} ${
             message.fromMe
               ? 'self-end rounded-se-sm bg-accent text-on-brand'
               : 'self-start rounded-ss-sm border border-line bg-surface'
@@ -160,7 +164,12 @@ function MessageList({ messages }: { messages: ChatMessage[] }) {
           <p className="break-words whitespace-pre-wrap">{message.body}</p>
           <p className={`mt-0.5 text-xs ${message.fromMe ? 'opacity-80' : 'text-muted'}`}>
             {formatMessageTime(message.createdAt)}
-            {message.fromMe && (message.readAt ? ' · ✓✓ נקראה' : ' · ✓ נשלחה')}
+            {message.fromMe &&
+              (message.readAt ? (
+                <> · <CheckCheck className="icon" /> נקראה</>
+              ) : (
+                <> · <Check className="icon" /> נשלחה</>
+              ))}
           </p>
         </li>
       ))}
@@ -246,7 +255,7 @@ function SendForm({
         הודעה
       </label>
       {isDraft && (
-        <p className="text-xs font-bold text-ai">✦ טיוטה של AI. קראו, תקנו אם צריך, ורק אז שלחו.</p>
+        <p className="enter text-xs font-bold text-ai"><Sparkles className="icon" /> טיוטה של AI. קראו, תקנו אם צריך, ורק אז שלחו.</p>
       )}
       <textarea
         id="chat-body"
@@ -263,9 +272,9 @@ function SendForm({
             type="button"
             onClick={suggest}
             disabled={suggesting || sending}
-            className="rounded-xl border-[1.5px] border-dashed border-ai py-2.5 text-center font-bold text-ai disabled:opacity-60"
+            className={`press rounded-xl border-[1.5px] border-dashed border-ai py-2.5 text-center font-bold text-ai ${suggesting ? 'thinking' : 'disabled:opacity-60'}`}
           >
-            {suggesting ? '✦ מנסח...' : '✦ הצעת תשובה'}
+            <Sparkles className="icon" /> {suggesting ? 'מנסח...' : 'הצעת תשובה'}
           </button>
         )}
         <button

@@ -1,3 +1,4 @@
+import { ArrowRight, Check, MessageCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { FormField } from '../components/FormField'
@@ -63,7 +64,7 @@ export function TravelerTripPage() {
   return (
     <div className="space-y-5">
       <Link to="/trips" className="text-sm font-semibold text-accent">
-        → חזרה לטיולים שלי
+        <ArrowRight className="icon" /> חזרה לטיולים שלי
       </Link>
 
       {error && (
@@ -79,7 +80,7 @@ export function TravelerTripPage() {
           <TripHeader trip={trip} />
           {trip.status !== 'IN_PROGRESS' && (
             <Link to={`/trips/${trip.id}/chat`} className={`block ${secondaryButtonClassName}`}>
-              ✉ צ'אט עם המדריך
+              <MessageCircle className="icon" /> צ'אט עם המדריך
             </Link>
           )}
           <TripBody trip={trip} onUpdate={applyUpdate} />
@@ -171,7 +172,7 @@ function TripBody({
     case 'CONFIRMED':
       return (
         <section className="space-y-3">
-          <p className="text-center font-display text-xl text-ok">✓ הכול סגור. נתראה בגאורגיה!</p>
+          <p className="text-center font-display text-xl text-ok"><Check className="icon" /> הכול סגור. נתראה בגאורגיה!</p>
           {schedule}
         </section>
       )
@@ -305,7 +306,7 @@ function CancelTrip({ tripId, onUpdate }: { tripId: string; onUpdate: (trip: Tri
   }
 
   return (
-    <div className={`${cardClassName} space-y-3 border-danger`}>
+    <div className={`${cardClassName} space-y-3 border border-danger`}>
       <p className="font-semibold">לבטל את הטיול? אי אפשר לחזור מזה.</p>
       <div className="flex gap-3">
         <button

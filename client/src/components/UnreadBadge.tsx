@@ -4,7 +4,7 @@ export function UnreadBadge({ count }: { count: number }) {
   return (
     <span
       aria-label={`${count} הודעות חדשות`}
-      className="inline-grid min-w-5 place-items-center rounded-full bg-brand px-1.5 text-xs font-bold text-on-brand tabular-nums"
+      className="pop inline-grid min-w-5 place-items-center rounded-full bg-brand px-1.5 text-xs font-bold text-on-brand tabular-nums"
     >
       {count > 99 ? '99+' : count}
     </span>

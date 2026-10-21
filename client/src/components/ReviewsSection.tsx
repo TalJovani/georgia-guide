@@ -1,3 +1,4 @@
+import { Check, PenLine } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { apiFetch } from '../lib/api'
@@ -63,11 +64,11 @@ export function ReviewsSection() {
           onClick={() => setWriting(true)}
           className={`w-full ${secondaryButtonClassName}`}
         >
-          ✍ כתבו מה אתם חושבים עלינו
+          <PenLine className="icon" /> כתבו מה אתם חושבים עלינו
         </button>
       )}
       {writing && (
-        <div className={cardClassName}>
+        <div className={`enter ${cardClassName}`}>
           <ReviewForm question="מה דעתכם על Georgia Trips?" onSent={addReview} />
         </div>
       )}
@@ -95,7 +96,7 @@ export function ReviewCard({ review }: { review: Review }) {
       {review.text && <p className="text-sm whitespace-pre-line">{review.text}</p>}
       <p className="flex flex-wrap gap-x-2 text-xs text-muted">
         <span>{formatDate(review.createdAt)}</span>
-        {review.verifiedTrip && <span className="font-bold text-ok">✓ טיול מאומת</span>}
+        {review.verifiedTrip && <span className="font-bold text-ok"><Check className="icon" /> טיול מאומת</span>}
       </p>
     </li>
   )

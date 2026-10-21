@@ -1,3 +1,4 @@
+import { Check, MessageCircle, PenLine } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useUnread } from '../chat/useUnread'
@@ -101,7 +102,7 @@ export function MyTripsPage() {
                   to={`/trips/${trip.id}/chat`}
                   className={`${secondaryButtonClassName} flex items-center justify-center gap-1.5`}
                 >
-                  ✉ צ'אט <UnreadBadge count={byTrip[trip.id] ?? 0} />
+                  <MessageCircle className="icon" /> צ'אט <UnreadBadge count={byTrip[trip.id] ?? 0} />
                 </Link>
               </div>
               {reviewableStatuses.includes(trip.status) && reviewed && (
@@ -135,7 +136,7 @@ function TripReview({
   const [open, setOpen] = useState(false)
 
   if (alreadyReviewed) {
-    return <p className="text-center text-sm font-bold text-ok">✓ תודה על הביקורת!</p>
+    return <p className="pop-slow text-center text-sm font-bold text-ok"><Check className="icon" /> תודה על הביקורת!</p>
   }
   if (!open) {
     return (
@@ -144,12 +145,12 @@ function TripReview({
         onClick={() => setOpen(true)}
         className={`w-full ${primaryButtonClassName}`}
       >
-        ✍ כתיבת ביקורת
+        <PenLine className="icon" /> כתיבת ביקורת
       </button>
     )
   }
   return (
-    <div className="border-t border-line pt-3">
+    <div className="enter border-t border-line pt-3">
       <ReviewForm
         tripId={trip.id}
         question={trip.status === 'CANCELLED' ? 'איך היה הטיפול בבקשה שלכם?' : 'איך היה?'}

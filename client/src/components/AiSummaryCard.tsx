@@ -1,3 +1,4 @@
+import { Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { apiFetch, ApiError } from '../lib/api'
 
@@ -30,7 +31,7 @@ export function AiSummaryCard({ tripId, initial }: { tripId: string; initial: Su
 
   return (
     <div className="space-y-2 rounded-xl border-[1.5px] border-dashed border-ai p-3">
-      <p className="text-xs font-bold text-ai">✦ סיכום AI</p>
+      <p className="text-xs font-bold text-ai"><Sparkles className="icon" /> סיכום AI</p>
 
       {summary.aiTags.length > 0 ? (
         <>

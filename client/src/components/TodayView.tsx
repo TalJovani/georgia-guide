@@ -1,3 +1,4 @@
+import { Check, MessageCircle, Phone, Siren } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { nowInGeorgia, tripDayIndex, tripLengthInDays } from '../lib/dates'
@@ -115,7 +116,7 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
                     <small className="block text-muted">{activity.details}</small>
                   )}
                 </span>
-                {states[index] === 'past' && <span className="font-bold text-ok">✓</span>}
+                {states[index] === 'past' && <span className="font-bold text-ok"><Check className="icon" /></span>}
                 {states[index] === 'now' && (
                   <span className="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-on-brand">
                     עכשיו
@@ -137,22 +138,22 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
         {trip.guide?.phone && (
           <a
             href={`tel:${trip.guide.phone}`}
-            className="rounded-xl bg-accent py-2.5 text-center font-bold text-on-brand"
+            className="press rounded-xl bg-accent py-2.5 text-center font-bold text-on-brand"
           >
-            ☎ התקשרות למדריך
+            <Phone className="icon" /> התקשרות למדריך
           </a>
         )}
         <Link
           to={`/trips/${trip.id}/chat`}
-          className="rounded-xl bg-accent py-2.5 text-center font-bold text-on-brand"
+          className="press rounded-xl bg-accent py-2.5 text-center font-bold text-on-brand"
         >
-          ✉ צ'אט עם המדריך
+          <MessageCircle className="icon" /> צ'אט עם המדריך
         </Link>
         <a
           href="tel:112"
-          className="rounded-xl border-[1.5px] border-danger bg-surface py-2.5 text-center font-bold text-danger"
+          className="press rounded-xl border-[1.5px] border-danger bg-surface py-2.5 text-center font-bold text-danger"
         >
-          ! מקרה חירום · 112
+          <Siren className="icon" /> מקרה חירום · 112
         </a>
       </div>
 

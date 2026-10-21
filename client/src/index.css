@@ -1,44 +1,57 @@
 @import "tailwindcss";
 
-/* Design tokens, taken from the "Georgia in eight scenes" mockup.
+/* Design tokens. Colors from Georgia itself: the terracotta roofs of old Tbilisi,
+   the green of the Caucasus slopes, the mountain sky, on a stone-white ground.
    Colors live in plain CSS variables so dark mode can swap them,
    and @theme inline turns each one into Tailwind classes (bg-brand, text-muted, ...). */
 :root {
-  --canvas: #f3f1f4;
+  --canvas: #f4f3ef; /* stone */
   --surface: #ffffff;
-  --ink: #1f1a24;
-  --muted: #6b6372;
-  --line: #ddd6e0;
-  --brand: #7a1f3d; /* Saperavi wine */
-  --brand-hover: #63182f;
-  --brand-soft: #f4e3ea;
-  --accent: #2f5d62; /* Caucasus slate */
-  --accent-soft: #dfeceb;
+  --ink: #1e1c19;
+  --muted: #69655d;
+  --line: #e1ddd5;
+  --brand: #b5523b; /* Tbilisi roof terracotta */
+  --brand-hover: #9a4330;
+  --brand-soft: #f7e7e1;
+  --accent: #3f6b4f; /* Caucasus green */
+  --accent-soft: #e2ece5;
+  --sky: #5b8fb9; /* mountain sky, for drawings and highlights, never small text */
+  --sky-soft: #e4eef6;
+  --on-sky: #10202c; /* text on a solid sky fill: white is too faint there */
   --ai: #b9852a; /* gold, reserved for AI suggestions */
   --ok: #2e7d4f;
-  --danger: #b4471f;
-  --danger-soft: #fbe9e2;
+  --danger: #b0243a;
+  --danger-soft: #fbe6e9;
   --on-brand: #ffffff;
+  /* Cards are lifted by a soft shadow and a hairline of transparent ink, not a solid grey
+     border: it reads as one object and works on any background. */
+  --card-shadow: 0 0 0 1px rgb(30 28 25 / 0.06), 0 1px 2px rgb(30 28 25 / 0.04),
+    0 6px 16px -8px rgb(30 28 25 / 0.12);
+  --button-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(30 28 25 / 0.15);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --canvas: #17141a;
-    --surface: #221e26;
-    --ink: #efe9f2;
-    --muted: #a59cab;
-    --line: #3a3340;
-    --brand: #e0718f;
-    --brand-hover: #e98aa4;
-    --brand-soft: #3d2230;
-    --accent: #7fb9bd;
-    --accent-soft: #1f3436;
+    --canvas: #151413;
+    --surface: #211f1c;
+    --ink: #f1eee9;
+    --muted: #a8a299;
+    --line: #37332e;
+    --brand: #e08a72;
+    --brand-hover: #eaa08b;
+    --brand-soft: #3b241d;
+    --accent: #8fbf9c;
+    --accent-soft: #1f2f24;
+    --sky: #8db8dc;
+    --sky-soft: #1c2a35;
     --ai: #e0b25c;
     --ok: #6fcf97;
-    --danger: #f08a5d;
-    --danger-soft: #3a221a;
-    --on-brand: #17141a;
+    --danger: #f2858f;
+    --danger-soft: #3a1c21;
+    --on-brand: #151413;
+    --card-shadow: 0 0 0 1px rgb(255 255 255 / 0.07), 0 6px 16px -8px rgb(0 0 0 / 0.6);
+    --button-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 1px 2px rgb(0 0 0 / 0.4);
     color-scheme: dark;
   }
 }
@@ -54,6 +67,9 @@
   --color-brand-soft: var(--brand-soft);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+  --color-on-sky: var(--on-sky);
   --color-ai: var(--ai);
   --color-ok: var(--ok);
   --color-danger: var(--danger);
@@ -62,4 +78,113 @@
 
   --font-sans: "Assistant", "Segoe UI", Arial, sans-serif;
   --font-display: "Suez One", "Assistant", Georgia, serif;
+
+  --shadow-card: var(--card-shadow);
+  --shadow-button: var(--button-shadow);
+}
+
+/* Motion. Curves from Emil Kowalski's design engineering rules: the built-in CSS easings are
+   too weak. These replace Tailwind's ease-out / ease-in-out and add ease-drawer. */
+@theme {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* things entering, and UI feedback */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); /* things moving on screen */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* sheets sliding up */
+}
+
+@layer base {
+  /* Tailwind 4 gives buttons the plain arrow cursor; show the hand on anything clickable. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  label:has(> input[type="checkbox"], > input[type="radio"]) {
+    cursor: pointer;
+  }
+
+  /* One clear keyboard focus ring everywhere, in the brand color. Only for keyboard focus
+     (:focus-visible), so mouse clicks don't leave a ring behind. */
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Line icons (lucide-react) sitting inside text: the size of the letters, on their
+     baseline, and in the text's own color. */
+  .icon {
+    display: inline-block;
+    width: 1.15em;
+    height: 1.15em;
+    vertical-align: -0.2em;
+    stroke-width: 2.25;
+  }
+
+  /* Pressable things shrink a little while pressed, so the site feels like it heard you.
+     Only transform and colors animate; hover colors change only with a real mouse
+     (Tailwind's hover: already checks that). */
+  .press {
+    transition:
+      transform 160ms var(--ease-out),
+      background-color 150ms ease,
+      color 150ms ease;
+  }
+  .press:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* Entrances: an element fades and rises into place when it is added to the page.
+     @starting-style is the style it starts from on its first frame, so no JavaScript is
+     needed. Never from scale(0): nothing in the real world appears from nothing. */
+  .enter,
+  .pop,
+  .pop-slow {
+    transition:
+      opacity 200ms var(--ease-out),
+      transform 200ms var(--ease-out);
+  }
+  .pop-slow {
+    transition-duration: 300ms;
+  }
+
+  /* Waiting for something slow (the AI draft): a soft breathing, not a spinner. */
+  .thinking {
+    animation: thinking 1.2s ease-in-out infinite;
+  }
+}
+
+@starting-style {
+  .enter {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .pop {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  .pop-slow {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes thinking {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Reduced motion means gentler, not none: keep the fades, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .press:active:not(:disabled) {
+    transform: none;
+  }
+  @starting-style {
+    .enter,
+    .pop,
+    .pop-slow {
+      transform: none;
+    }
+  }
+  .thinking {
+    animation: none;
+  }
 }

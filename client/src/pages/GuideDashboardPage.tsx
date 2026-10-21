@@ -1,3 +1,4 @@
+import { MessageCircle } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useUnread } from '../chat/useUnread'
@@ -103,7 +104,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="rounded-full border border-line bg-surface px-3 py-1 text-sm aria-pressed:border-accent aria-pressed:font-bold aria-pressed:text-accent"
+      className="press rounded-full border border-line bg-surface px-3 py-1 text-sm aria-pressed:border-accent aria-pressed:font-bold aria-pressed:text-accent"
     >
       {children}
     </button>
@@ -170,7 +171,7 @@ function GuideTripCard({ trip }: { trip: GuideTripRequest }) {
           to={`/guide/trips/${trip.id}/chat`}
           className={`${secondaryButtonClassName} flex items-center justify-center gap-1.5`}
         >
-          ✉ צ'אט <UnreadBadge count={byTrip[trip.id] ?? 0} />
+          <MessageCircle className="icon" /> צ'אט <UnreadBadge count={byTrip[trip.id] ?? 0} />
         </Link>
       </div>
     </li>

@@ -24,7 +24,7 @@ export function DayTabs({
           role="tab"
           aria-selected={index === selected}
           onClick={() => onSelect(index)}
-          className="shrink-0 rounded-xl border border-line bg-surface px-3 py-1.5 text-center text-sm aria-selected:border-accent aria-selected:font-bold aria-selected:text-accent"
+          className="press shrink-0 rounded-xl border border-line bg-surface px-3 py-1.5 text-center text-sm aria-selected:border-accent aria-selected:font-bold aria-selected:text-accent"
         >
           <span className="block">
             יום {index + 1}
