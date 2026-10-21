@@ -6,8 +6,8 @@ import { apiFetch } from '../lib/api'
 import type { MyReviews, Review, ReviewsResponse } from '../trips/types'
 import './landing.css'
 
-// The landing page: who Miki is, where a trip goes, how it works, what travelers say.
-// Everyone sees it, signed in or not; the actions change with who is looking.
+// The landing page, set like an Apple product page: who Miki is, where a trip goes, how it works,
+// what travelers say. Everyone sees it, signed in or not; the actions change with who is looking.
 // Photographs are real pictures of Georgia from open collections, credited in the footer.
 
 const photo = (file: string) => `/landing/${file}`
@@ -15,24 +15,55 @@ const photo = (file: string) => `/landing/${file}`
 // A delay for the nth piece of an entrance, as a CSS custom property the stylesheet reads.
 const delay = (ms: number) => ({ '--d': `${ms}ms` }) as CSSProperties
 
-type Place = { kind: string; name: string; ka: string; text: string }
+const statement =
+  'מיקי נולד בגיאורגיה, טס אליה כמעט כל חודש, ומדבר עברית, אנגלית וגיאורגית. הוא בונה לכם טיול אישי, יום אחרי יום, ומלווה אתכם בטלפון לאורך כל הדרך.'
 
-// Grouped like a timetable: towns, mountains, then wine and food. Georgian names in their own letters.
-const placeGroups: Place[][] = [
-  [
-    { kind: 'עיר', name: 'טביליסי', ka: 'თბილისი', text: 'העיר העתיקה, מרחצאות הגופרית והמרפסות המגולפות' },
-    { kind: 'עיר', name: 'מצחתה', ka: 'მცხეთა', text: 'הבירה העתיקה, ומנזר ג׳ווארי מעל מפגש הנהרות' },
-    { kind: 'עיירה', name: 'סיגנאגי', ka: 'სიღნაღი', text: 'עיירת החומות של קאחתי, מעל עמק אלאזני' },
-  ],
-  [
-    { kind: 'הרים', name: 'קזבגי', ka: 'ყაზბეგი', text: 'כנסיית גרגטי מתחת להר קזבק, 5,047 מטר' },
-    { kind: 'מבצר', name: 'אנאנורי', ka: 'ანანური', text: 'מבצר על אגם ז׳ינוואלי, בדרך הצבאית אל ההרים' },
-  ],
-  [
-    { kind: 'יין', name: 'קאחתי', ka: 'კახეთი', text: 'יקבים משפחתיים, ויין שמתיישן בקווברי, כדי חרס בתוך האדמה' },
-    { kind: 'מאפה', name: 'חצ׳אפורי', ka: 'ხაჭაპური', text: 'לחם גבינה חם, ישר מהתנור' },
-    { kind: 'מנה', name: 'חינקלי', ka: 'ხინკალი', text: 'כיסונים עסיסיים, שאוכלים בידיים' },
-  ],
+type Place = { name: string; ka: string; text: string; image: string; alt: string }
+
+// The sideways gallery. Georgian names in their own letters.
+const places: Place[] = [
+  {
+    name: 'טביליסי',
+    ka: 'თბილისი',
+    text: 'העיר העתיקה, מרחצאות הגופרית וגשר השלום מעל המטקוורי.',
+    image: 'old-tbilisi-from-narikala.jpg',
+    alt: 'טביליסי העתיקה ממבצר נריקלה, עם הנהר וגשר השלום',
+  },
+  {
+    name: 'מצחתה',
+    ka: 'მცხეთა',
+    text: 'הבירה העתיקה, ומנזר ג׳ווארי מעל מפגש הנהרות.',
+    image: 'jvari-monastery-mtskheta-georgia.jpg',
+    alt: 'מנזר ג׳ווארי מאבן על גבעה במצחתה',
+  },
+  {
+    name: 'סיגנאגי',
+    ka: 'სიღნაღი',
+    text: 'עיירת החומות של קאחתי, מעל עמק אלאזני.',
+    image: 'view-of-sighnaghi-02.jpg',
+    alt: 'גגות אדומים וכנסייה בסיגנאגי, ומאחוריהם עמק אלאזני',
+  },
+  {
+    name: 'קזבגי',
+    ka: 'ყაზბეგი',
+    text: 'הרי הקווקז, וכנסיית גרגטי מתחת להר קזבק, 5,047 מטר.',
+    image: 'kazbegi-mountains-2.jpg',
+    alt: 'רכס הרים ירוק ותלול בקזבגי',
+  },
+  {
+    name: 'קאחתי',
+    ka: 'კახეთი',
+    text: 'ארץ היין: יקבים משפחתיים, ויין שמתיישן בקווברי, כדי חרס בתוך האדמה.',
+    image: 'vendanges-en-kakhetie-b.jpg',
+    alt: 'ליתוגרפיה משנת 1847: בציר ענבים בכרם בקאחתי',
+  },
+  {
+    name: 'האוכל',
+    ka: 'ხაჭაპური',
+    text: 'חצ׳אפורי חם מהתנור, וחינקלי שאוכלים בידיים.',
+    image: 'tbilisi-khachapuri-and-khinkali-georgian-traditional-food.jpg',
+    alt: 'חצ׳אפורי חתוך לרבעים ושני חינקלי על שולחן עץ',
+  },
 ]
 
 type Phrase = { he: string; ka: string; say: string }
@@ -74,21 +105,44 @@ const phraseGroups: { title: string; phrases: Phrase[] }[] = [
   },
 ]
 
+// How a trip happens, with the photograph that stays beside each step.
+const steps = [
+  {
+    title: 'קודם, אתם מספרים.',
+    text: 'מתי אתם רוצים לטוס, כמה אתם, מה התקציב, ומה אתם הכי אוהבים: יין, הרים, שווקים או אוכל טוב.',
+    image: 'tbilisi-khachapuri-and-khinkali-georgian-traditional-food.jpg',
+    alt: 'חצ׳אפורי וחינקלי על שולחן עץ בטביליסי',
+  },
+  {
+    title: 'אחר כך, מסלול.',
+    text: 'מיקי בונה לכם מסלול אישי, יום אחרי יום ושעה אחרי שעה. משנים ומדייקים יחד, עד שהוא בדיוק כמו שרציתם.',
+    image: 'view-of-sighnaghi-02.jpg',
+    alt: 'סיגנאגי מעל עמק אלאזני',
+  },
+  {
+    title: 'ובזמן הטיול, מיקי איתכם.',
+    text: 'בטלפון ובצ׳אט, בזמן אמת: לאן נוסעים עכשיו, מה מזמינים, ומה עושים אם משהו משתנה.',
+    image: 'kazbegi-mountains-2.jpg',
+    alt: 'הרי קזבגי',
+  },
+]
+
 // Every picture on the page, credited as its licence asks.
 const credits = [
-  { what: 'טביליסי העתיקה מנריקלה', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/wiki/File:Tbilisi,_Old_Tbilisi_from_Narikala,_Georgia.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
   { what: 'כנסיית השילוש בגרגטי', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/w/index.php?curid=116990360', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
+  { what: 'טביליסי בלילה', by: 'Boris Kuznetsov', licence: 'CC BY 2.0', page: 'https://commons.wikimedia.org/wiki/File:Tbilisi_at_Night,_Georgia.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/2.0/' },
+  { what: 'טביליסי העתיקה מנריקלה', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/wiki/File:Tbilisi,_Old_Tbilisi_from_Narikala,_Georgia.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
   { what: 'טביליסי, תחילת המאה ה־20', by: 'Sergei Prokudin-Gorskii', licence: 'נחלת הכלל', page: 'https://commons.wikimedia.org/wiki/File:View_of_Havlabar_(Tbilisi),_in_the_early_1900s,_Sergei_Mikhailovich_Prokudin-Gorskii.jpg', licenceUrl: 'https://creativecommons.org/publicdomain/mark/1.0/' },
-  { what: 'מרפסות בטביליסי', by: 'Morten Oddvik', licence: 'CC BY 2.0', page: 'https://commons.wikimedia.org/w/index.php?curid=3353286', licenceUrl: 'https://creativecommons.org/licenses/by/2.0/' },
-  { what: 'חצ׳אפורי וחינקלי', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/wiki/File:Tbilisi,_Khachapuri_and_khinkali,_Georgian_traditional_food,_Georgia.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
   { what: 'מנזר ג׳ווארי', by: 'falco', licence: 'CC0', page: 'https://commons.wikimedia.org/w/index.php?curid=105104108', licenceUrl: 'https://creativecommons.org/publicdomain/zero/1.0/' },
   { what: 'סיגנאגי', by: 'Bernard Gagnon', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/wiki/File:View_of_Sighnaghi_02.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
   { what: 'הרי קזבגי', by: 'Sandromedia123', licence: 'CC0', page: 'https://commons.wikimedia.org/w/index.php?curid=188463559', licenceUrl: 'https://creativecommons.org/publicdomain/zero/1.0/' },
   { what: 'בציר בקאחתי, 1847', by: 'Grigory Gagarin', licence: 'נחלת הכלל', page: 'https://commons.wikimedia.org/wiki/File:Vendanges_en_Kakhetie_(B).jpg', licenceUrl: 'https://creativecommons.org/publicdomain/mark/1.0/' },
+  { what: 'חצ׳אפורי וחינקלי', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/wiki/File:Tbilisi,_Khachapuri_and_khinkali,_Georgian_traditional_food,_Georgia.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
 ]
 
-// Sections rise into place as they scroll in; photographs open like a shutter.
-// The hidden starting state only applies once `is-live` is on, so nothing stays hidden without this.
+// Sections rise into place as they scroll in. The hidden starting state only applies once
+// `is-live` is on, so nothing stays hidden if this never runs. Parts that appear later (the
+// reviews arrive from the server after the page) are picked up as they are added.
 function useReveal() {
   const root = useRef<HTMLDivElement>(null)
 
@@ -105,288 +159,201 @@ function useReveal() {
           }
         }
       },
-      // Start a little before the element enters, so a fast scroll never lands on an empty frame.
-      { rootMargin: '0px 0px 10% 0px' },
+      { rootMargin: '0px 0px -8% 0px' },
     )
-    el.querySelectorAll('[data-reveal], [data-shutter]').forEach((target) => observer.observe(target))
-    return () => observer.disconnect()
+    const watch = (node: ParentNode) =>
+      node.querySelectorAll('[data-reveal]:not(.is-in)').forEach((target) => observer.observe(target))
+    watch(el)
+    const added = new MutationObserver((records) => {
+      for (const record of records) {
+        record.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return
+          if (node.matches('[data-reveal]')) observer.observe(node)
+          watch(node)
+        })
+      }
+    })
+    added.observe(el, { childList: true, subtree: true })
+    return () => {
+      observer.disconnect()
+      added.disconnect()
+    }
   }, [])
 
   return root
 }
 
-// Depth: while the mouse moves over the hero, the view inside the small photograph shifts a few
-// pixels the other way, like looking through a window. A spring follows the mouse instead of
-// jumping to it, so the picture has weight. Mouse only, and never when less motion is asked for.
-// The transform is written straight to the element: no React state, no re-render per frame.
-function useWindowDepth() {
-  const area = useRef<HTMLElement>(null)
-  const layer = useRef<HTMLDivElement>(null)
+// The statement's words turn from grey to ink as it moves up the screen, as if being read.
+// Classes are set straight on the spans, once per animation frame: no React render per scroll.
+function useInkFill() {
+  const ref = useRef<HTMLParagraphElement>(null)
 
   useEffect(() => {
-    const zone = area.current
-    const el = layer.current
-    if (!zone || !el) return
-    if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    const target = { x: 0, y: 0 }
-    const pos = { x: 0, y: 0 }
-    const speed = { x: 0, y: 0 }
+    const el = ref.current
+    if (!el) return
+    const words = [...el.querySelectorAll<HTMLElement>('.ap-word')]
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      words.forEach((word) => word.classList.add('is-lit'))
+      return
+    }
     let frame = 0
-
-    // A damped spring: pulled toward the target, slowed by friction, stopped when it has settled.
-    const step = () => {
-      for (const axis of ['x', 'y'] as const) {
-        speed[axis] = (speed[axis] + (target[axis] - pos[axis]) * 0.06) * 0.82
-        pos[axis] += speed[axis]
-      }
-      el.style.transform = `translate3d(${pos.x.toFixed(2)}px, ${pos.y.toFixed(2)}px, 0)`
-      const moving =
-        Math.abs(speed.x) + Math.abs(speed.y) > 0.01 ||
-        Math.abs(target.x - pos.x) + Math.abs(target.y - pos.y) > 0.05
-      frame = moving ? requestAnimationFrame(step) : 0
-    }
-    const kick = () => {
-      if (!frame) frame = requestAnimationFrame(step)
-    }
-
-    const onMove = (event: PointerEvent) => {
+    const paint = () => {
+      frame = 0
       const box = el.getBoundingClientRect()
-      const nx = (event.clientX - (box.left + box.width / 2)) / (window.innerWidth / 2)
-      const ny = (event.clientY - (box.top + box.height / 2)) / (window.innerHeight / 2)
-      target.x = Math.max(-1, Math.min(1, nx)) * -12
-      target.y = Math.max(-1, Math.min(1, ny)) * -9
-      kick()
+      const view = window.innerHeight
+      const progress = Math.min(1, Math.max(0, (view * 0.85 - box.top) / (box.height + view * 0.35)))
+      const lit = Math.round(progress * words.length)
+      words.forEach((word, index) => word.classList.toggle('is-lit', index < lit))
     }
-    const onLeave = () => {
-      target.x = 0
-      target.y = 0
-      kick()
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(paint)
     }
-
-    zone.addEventListener('pointermove', onMove)
-    zone.addEventListener('pointerleave', onLeave)
+    paint()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
     return () => {
-      zone.removeEventListener('pointermove', onMove)
-      zone.removeEventListener('pointerleave', onLeave)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
       cancelAnimationFrame(frame)
     }
   }, [])
 
-  return [area, layer] as const
+  return ref
 }
 
 export function HomePage() {
   const root = useReveal()
-  const [depthArea, depthLayer] = useWindowDepth()
 
   return (
-    <div ref={root} className="lp">
-      <LandingNav />
+    <div ref={root} className="ap">
+      <ProductBar />
 
-      <header ref={depthArea} className="lp-grid lp-hero">
-        {/* Three layers, one motion each: the mouse spring, the slow breath, the load settle. */}
-        <figure className="lp-hero__small lp-alive" data-open style={delay(350)}>
-          <div ref={depthLayer} className="lp-alive__depth">
-            <div className="lp-alive__breath">
-              <img
-                src={photo('old-tbilisi-from-narikala.jpg')}
-                width={1600}
-                height={1000}
-                alt="טביליסי העתיקה ממבצר נריקלה: גגות אדומים, כנסייה עם כיפה מחודדת, נהר המטקוורי וגשר השלום"
-              />
-            </div>
+      <header className="ap-hero">
+        <div className="ap-wrap">
+          <p className="ap-hero__eyebrow" data-load style={delay(0)}>
+            טיולים פרטיים בגיאורגיה
+          </p>
+          <h1 className="ap-display" data-load style={delay(120)}>
+            גיאורגיה. בעברית.
+          </h1>
+          <p className="ap-intro ap-hero__sub" data-load style={delay(260)}>
+            טיול אישי עם מיקי, שנולד שם ומכיר כל פינה.
+          </p>
+          <div className="ap-actions" data-load style={delay(380)}>
+            <PrimaryAction />
+            <a href="#how" className="ap-more">
+              איך זה עובד
+            </a>
           </div>
-          <figcaption className="lp-alive__caption" aria-hidden="true">
-            <span className="lp-ka" lang="ka" dir="ltr">
-              ძველი თბილისი
-            </span>
-            טביליסי העתיקה, מנריקלה
-          </figcaption>
-        </figure>
-        <h1 className="lp-hero__title">
-          <span className="lp-line lp-hero__line1">
-            <span data-line style={{ '--i': 0 } as CSSProperties}>
-              גיאורגיה,
-            </span>
-          </span>
-          <span className="lp-line lp-hero__line2">
-            <span data-line style={{ '--i': 1 } as CSSProperties}>
-              בעברית.
-            </span>
-          </span>
-        </h1>
-        <figure className="lp-hero__tall" data-open style={delay(150)}>
+        </div>
+        <figure className="ap-hero__media">
           <img
-            src={photo('gergeti-trinity-church-georgia.jpg')}
-            width={1440}
-            height={957}
-            style={{ objectPosition: '46% center' }}
-            alt="כנסיית השילוש בגרגטי על גבעה ירוקה מתחת לשמיים כחולים"
+            src={photo('hero-gergeti.jpg')}
+            width={2400}
+            height={1595}
+            fetchPriority="high"
+            alt="כנסיית השילוש בגרגטי על גבעה ירוקה מתחת לשמיים כחולים ועננים"
           />
         </figure>
-        <div className="lp-hero__text" data-load style={delay(650)}>
-          <p>
-            מיקי נולד בגיאורגיה ומדבר עברית. הוא בונה לכם טיול אישי, יום אחרי יום, ומלווה אתכם בטלפון
-            לאורך כל הדרך.
-          </p>
-          <MainActions />
-        </div>
       </header>
 
-      <section aria-labelledby="miki-title" className="lp-grid lp-intro">
-        <h2 id="miki-title" className="lp-intro__head" data-reveal>
-          נעים להכיר, מיקי
-        </h2>
-        <p className="lp-intro__note" data-reveal style={delay(80)}>
-          הכול התחיל מרעיון פשוט: להראות לאנשים את גיאורגיה של המקומיים. מיקי סבלני, קשוב והרפתקן,
-          והוא עדיין מתרגש מכל טיול מחדש.
-        </p>
-        <ul className="lp-facts" aria-label="מיקי במספרים">
-          {[
-            { big: '3 שפות', small: 'עברית, אנגלית וגיאורגית' },
-            { big: 'כל חודש', small: 'מיקי טס לגיאורגיה כמעט כל חודש' },
-            { big: 'כשעתיים וחצי', small: 'טיסה ישירה מתל אביב לטביליסי' },
-            { big: 'כל רמת כשרות', small: 'מכשר־סטייל ועד מהדרין' },
-          ].map((fact, index) => (
-            <li key={fact.big} data-reveal style={delay(index * 70)}>
-              <strong>{fact.big}</strong>
-              <span>{fact.small}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="lp-intro__aside" data-reveal>
-          הטיול מתאים גם למשפחות עם ילדים, ואם צריך, מיקי דואג לרכב שכור. ובלי פערי תיווך של חברת
-          טיולים גדולה, מקבלים יותר טיול על אותו תקציב.
-        </p>
-        <figure className="lp-intro__photo">
-          <div className="lp-frame" data-shutter>
-            <img
-              src={photo('view-of-havlabar-tbilisi-in-the-early.jpg')}
-              width={1440}
-              height={1251}
-              decoding="async"
-              alt="טביליסי מלמעלה, בתים וכנסיות על צוק מעל הנהר, בצילום צבע ישן"
-            />
+      <Statement />
+
+      <section id="miki" aria-labelledby="miki-title" className="ap-chapter ap-chapter--alt">
+        <div className="ap-wrap">
+          <div className="ap-chapter__head">
+            <h2 id="miki-title" className="ap-headline" data-reveal>
+              נעים להכיר, מיקי.
+            </h2>
+            <p className="ap-intro" data-reveal style={delay(100)}>
+              סבלני, קשוב והרפתקן, ועדיין מתרגש מכל טיול מחדש.
+            </p>
           </div>
-          <figcaption className="lp-caption">
-            טביליסי, העיר שמיקי גדל בה, בצילום צבע של סרגיי פרוקודין־גורסקי מתחילת המאה ה־20.
-          </figcaption>
-        </figure>
+          <div className="ap-bento">
+            <div className="ap-card ap-card--3" data-reveal>
+              <p className="ap-card__big">3</p>
+              <p className="ap-card__title">שפות.</p>
+              <p className="ap-card__text">עברית איתכם, גיאורגית עם המקומיים, ואנגלית לכל השאר.</p>
+            </div>
+            <figure className="ap-card ap-card--3 ap-card--photo" data-reveal style={delay(80)}>
+              <img
+                src={photo('view-of-havlabar-tbilisi-in-the-early.jpg')}
+                width={1440}
+                height={1251}
+                decoding="async"
+                alt="טביליסי מלמעלה בצילום צבע מתחילת המאה ה־20"
+              />
+              <figcaption className="ap-card__over">
+                <p className="ap-card__title">העיר שמיקי גדל בה.</p>
+                <p className="ap-card__text">טביליסי, בצילום צבע של פרוקודין־גורסקי מתחילת המאה ה־20.</p>
+              </figcaption>
+            </figure>
+            <div className="ap-card ap-card--2" data-reveal>
+              <p className="ap-card__big ap-card__big--mid">כל חודש</p>
+              <p className="ap-card__text">מיקי טס לגיאורגיה כמעט כל חודש, אז הוא תמיד מעודכן.</p>
+            </div>
+            <div className="ap-card ap-card--2" data-reveal style={delay(80)}>
+              <p className="ap-card__big ap-card__big--mid">2.5 שעות</p>
+              <p className="ap-card__text">בערך, בטיסה ישירה מתל אביב לטביליסי.</p>
+            </div>
+            <div className="ap-card ap-card--2" data-reveal style={delay(160)}>
+              <p className="ap-card__big ap-card__big--mid">כל כשרות</p>
+              <p className="ap-card__text">מסעדות שמתאימות בדיוק, מכשר־סטייל ועד מהדרין.</p>
+            </div>
+            <div className="ap-card ap-card--3" data-reveal>
+              <p className="ap-card__title">גם עם ילדים.</p>
+              <p className="ap-card__text">אטרקציות ונופים לכל הגילים, וקצב שמתאים לכל המשפחה.</p>
+            </div>
+            <div className="ap-card ap-card--3" data-reveal style={delay(80)}>
+              <p className="ap-card__title">בלי פערי תיווך.</p>
+              <p className="ap-card__text">
+                יותר טיול על אותו תקציב. וצריכים רכב? מיקי ידאג לרכב שכור.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <section aria-labelledby="places-title" className="lp-grid lp-places">
-        <h2 id="places-title" className="lp-places__head" data-reveal>
-          מטביליסי,
-          <br />
-          לכל כיוון שתרצו
-        </h2>
-        <figure className="lp-places__photo">
-          <div className="lp-frame" data-shutter>
-            <img
-              src={photo('balconies-of-tbilisi.jpg')}
-              width={1440}
-              height={958}
-              decoding="async"
-              style={{ objectPosition: '30% center' }}
-              alt="מעקה עץ מגולף של מרפסת בטביליסי, בירוק בהיר"
-            />
-          </div>
+      <Places />
+
+      <section aria-labelledby="night-title" className="ap-night">
+        <div className="ap-wrap">
+          <h2 id="night-title" className="ap-headline" data-reveal>
+            טביליסי, אחרי השקיעה.
+          </h2>
+          <p className="ap-intro" data-reveal style={delay(100)}>
+            העיר העתיקה נדלקת, קתדרלת סמבה זוהרת על הגבעה, ומיקי יודע איפה יושבים לארוחת ערב.
+          </p>
+        </div>
+        <figure className="ap-night__media">
+          <img
+            src={photo('tbilisi-night.jpg')}
+            width={2400}
+            height={1357}
+            decoding="async"
+            alt="טביליסי בלילה מלמעלה: אורות העיר, הנהר, גשר השלום וקתדרלת סמבה המוארת"
+          />
         </figure>
-        <p className="lp-places__label" aria-hidden="true">
-          מקומות
-        </p>
-        <table className="lp-places__table">
-          <caption className="sr-only">מקומות שמיקי לוקח אליהם, עם השם שלהם בגיאורגית</caption>
-          {placeGroups.map((group, groupIndex) => (
-            <tbody key={groupIndex}>
-              {group.map((place) => (
-                <tr key={place.name} data-reveal>
-                  <td className="lp-kind">{place.kind}</td>
-                  <td className="lp-place">
-                    <strong>{place.name}</strong>
-                    <span>{place.text}</span>
-                  </td>
-                  <td className="lp-ka" lang="ka" dir="ltr">
-                    {place.ka}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          ))}
-        </table>
-        <p className="lp-places__more" data-reveal>
-          ועוד אגמים, מנזרים חצובים בסלע ופינות שרק מקומיים מכירים. ספרו למיקי מה אתם אוהבים, והוא כבר
-          יידע לאן לקחת אתכם.
-        </p>
       </section>
 
       <Phrasebook />
 
-      <section aria-labelledby="how-title" className="lp-grid lp-how">
-        <h2 id="how-title" className="lp-how__head" data-reveal>
-          איך זה עובד
-        </h2>
-        <ol className="lp-stage">
-          <li className="lp-stage">
-            <div className="lp-frame lp-stage__photo--1" data-shutter>
-              <img
-                src={photo('tbilisi-khachapuri-and-khinkali-georgian-traditional-food.jpg')}
-                width={1440}
-                height={957}
-                decoding="async"
-                style={{ objectPosition: '38% 70%' }}
-                alt="חצ׳אפורי חתוך לרבעים ושני חינקלי על שולחן עץ בטביליסי"
-              />
-            </div>
-            <p className="lp-stage__text--1" data-reveal>
-              <b>קודם, אתם מספרים.</b> מתי אתם רוצים לטוס, כמה אתם, מה התקציב, ומה אתם הכי אוהבים: יין,
-              הרים, שווקים או אוכל טוב.
-            </p>
-          </li>
-          <li className="lp-stage">
-            <div className="lp-frame lp-stage__photo--2" data-shutter>
-              <img
-                src={photo('jvari-monastery-mtskheta-georgia.jpg')}
-                width={1440}
-                height={1019}
-                decoding="async"
-                style={{ objectPosition: '62% center' }}
-                alt="מנזר ג׳ווארי מאבן על גבעה במצחתה"
-              />
-            </div>
-            <p className="lp-stage__text--2" data-reveal>
-              <b>אחר כך, מסלול.</b> מיקי בונה לכם מסלול אישי, יום אחרי יום ושעה אחרי שעה. משנים ומדייקים
-              יחד, עד שהוא בדיוק כמו שרציתם.
-            </p>
-          </li>
-          <li className="lp-stage">
-            <div className="lp-frame lp-stage__photo--3" data-shutter>
-              <img
-                src={photo('view-of-sighnaghi-02.jpg')}
-                width={1440}
-                height={960}
-                decoding="async"
-                alt="גגות אדומים וכנסייה בסיגנאגי, ומאחוריהם עמק אלאזני"
-              />
-            </div>
-            <p className="lp-stage__text--3" data-reveal>
-              <b>ובזמן הטיול, מיקי איתכם.</b> בטלפון ובצ׳אט, בזמן אמת: לאן נוסעים עכשיו, מה מזמינים, ומה
-              עושים אם משהו משתנה.
-            </p>
-          </li>
-        </ol>
-      </section>
+      <HowItWorks />
 
       <Voices />
 
-      <section aria-labelledby="close-title" className="lp-grid lp-close">
-        <div data-reveal>
-          <h2 id="close-title">
-            ספרו למיקי מתי אתם רוצים לטוס ומה אתם אוהבים, והוא יבנה לכם את הטיול.
+      <section aria-labelledby="close-title" className="ap-chapter ap-close">
+        <div className="ap-wrap">
+          <h2 id="close-title" className="ap-headline" data-reveal>
+            מוכנים לגיאורגיה?
           </h2>
-          <MainActions />
+          <p className="ap-intro" data-reveal style={delay(100)}>
+            ספרו למיקי מתי אתם רוצים לטוס ומה אתם אוהבים. הוא כבר יבנה לכם את הטיול.
+          </p>
+          <div className="ap-actions" data-reveal style={delay(200)}>
+            <PrimaryAction />
+            <SecondaryLink />
+          </div>
         </div>
       </section>
 
@@ -395,48 +362,30 @@ export function HomePage() {
   )
 }
 
-// The bar on top: a link or two at the start, the name in the middle, the main action at the end.
-function LandingNav() {
+// The bar on top: the name, the chapters, one small blue pill. Frosted, and it stays.
+function ProductBar() {
   const { user } = useAuth()
 
   return (
-    <nav className="lp-grid" aria-label="ראשי">
-      <div className="lp-nav" style={{ gridColumn: '1 / 13' }}>
-        <div className="lp-nav__start">
-          {!user && (
-            <Link to="/login" className="lp-link">
-              כניסה
-            </Link>
-          )}
-          {user?.role === 'TRAVELER' && (
-            <Link to="/trips" className="lp-link">
-              הטיולים שלי
-            </Link>
-          )}
-          {user?.role === 'GUIDE' && (
-            <Link to="/guide/reviews" className="lp-link">
-              ביקורות
-            </Link>
-          )}
-          {user && (
-            <Link to="/account" className="lp-link">
-              החשבון שלי
-            </Link>
-          )}
-        </div>
-        <Link to="/" className="lp-nav__name" dir="ltr">
+    <nav className="ap-nav" aria-label="ראשי">
+      <div className="ap-wrap ap-nav__row">
+        <Link to="/" className="ap-nav__name" dir="ltr">
           Georgia Trips
         </Link>
-        <div className="lp-nav__end">
-          <PrimaryAction />
+        <div className="ap-nav__links">
+          <a href="#miki">מיקי</a>
+          <a href="#places">מקומות</a>
+          <a href="#how">איך זה עובד</a>
+          {user ? <Link to="/account">החשבון שלי</Link> : <Link to="/login">כניסה</Link>}
         </div>
+        <PrimaryAction small />
       </div>
     </nav>
   )
 }
 
 // The one thing to do next, named for whoever is looking.
-function PrimaryAction() {
+function PrimaryAction({ small = false }: { small?: boolean }) {
   const { user } = useAuth()
   const [to, label] =
     user?.role === 'GUIDE'
@@ -445,87 +394,222 @@ function PrimaryAction() {
         ? ['/trips/new', 'בקשת טיול חדשה']
         : ['/register', 'בואו נתכנן טיול']
 
-  // The arrow points forward (left, in Hebrew) and steps ahead on hover. Decoration only.
   return (
-    <Link to={to} className="lp-button">
+    <Link to={to} className={small ? 'ap-pill ap-pill--small' : 'ap-pill'}>
       {label}
-      <span className="lp-button__arrow" aria-hidden="true">
-        ←
-      </span>
     </Link>
   )
 }
 
-// The main action, with the second choice as a plain link beside it.
-function MainActions() {
+// The second choice, as a blue text link with a chevron.
+function SecondaryLink() {
   const { user } = useAuth()
-  return (
-    <div className="lp-actions">
-      <PrimaryAction />
-      {!user && (
-        <Link to="/login" className="lp-link">
-          כבר יש לי חשבון
-        </Link>
-      )}
-      {user?.role === 'TRAVELER' && (
-        <Link to="/trips" className="lp-link">
-          הטיולים שלי
-        </Link>
-      )}
-    </div>
+  if (user?.role === 'GUIDE') return null
+  return user ? (
+    <Link to="/trips" className="ap-more">
+      הטיולים שלי
+    </Link>
+  ) : (
+    <Link to="/login" className="ap-more">
+      כבר יש לי חשבון
+    </Link>
   )
 }
 
-// The one live thing: pick a Hebrew phrase, see it in Georgian letters and hear how it sounds.
-function Phrasebook() {
-  const all = phraseGroups.flatMap((group) => group.phrases)
-  const [shown, setShown] = useState<Phrase>(all.find((p) => p.he === 'לחיים!') ?? all[0])
-
+function Statement() {
+  const ref = useInkFill()
   return (
-    <section aria-labelledby="say-title" className="lp-grid lp-say">
-      <h2 id="say-title" className="lp-say__head" data-reveal>
-        מה שמיקי יגיד בשבילכם
-      </h2>
-      <p className="lp-say__intro" data-reveal style={delay(80)}>
-        בגיאורגיה מדברים גיאורגית, בכתב שלא דומה לשום כתב אחר. מיקי מדבר בשבילכם, ובכל זאת נעים לדעת כמה
-        מילים. בחרו משפט וראו איך כותבים ואומרים אותו.
-      </p>
-      <p className="lp-say__shown" aria-live="polite">
-        <span key={shown.ka} className="lp-say__ka lp-ka" lang="ka" dir="ltr">
-          {shown.ka}
-        </span>
-        <span key={shown.say} className="lp-say__sound">
-          {shown.say}
-        </span>
-        <span className="lp-say__he">{shown.he}</span>
-      </p>
-      {phraseGroups.map((group, index) => (
-        <div key={group.title} className="lp-say__group" data-reveal style={delay(index * 90)}>
-          <h3>{group.title}</h3>
-          <ul>
-            {group.phrases.map((phrase) => (
-              <li key={phrase.he}>
-                <button
-                  type="button"
-                  className="lp-say__phrase"
-                  aria-pressed={phrase === shown}
-                  onClick={() => setShown(phrase)}
-                  onMouseEnter={() => setShown(phrase)}
-                  onFocus={() => setShown(phrase)}
-                >
-                  {phrase.he}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+    <section aria-label="על מיקי" className="ap-statement">
+      <div className="ap-wrap">
+        <p ref={ref}>
+          {statement.split(' ').map((word, index) => (
+            <span key={index} className="ap-word">
+              {word}{' '}
+            </span>
+          ))}
+        </p>
+      </div>
     </section>
   )
 }
 
-// What travelers say: the newest review with words, set on the mountains. A signed-in traveler who
-// hasn't written a general review yet can add one here.
+// Places: a sideways gallery of tall cards. The round buttons move it one card at a time.
+function Places() {
+  const track = useRef<HTMLUListElement>(null)
+
+  // In a right-to-left page, going forward means scrolling toward the left.
+  function move(direction: 1 | -1) {
+    const el = track.current
+    const card = el?.firstElementChild as HTMLElement | null
+    if (!el || !card) return
+    el.scrollBy({ left: -direction * (card.offsetWidth + 20), behavior: 'smooth' })
+  }
+
+  return (
+    <section id="places" aria-labelledby="places-title" className="ap-chapter">
+      <div className="ap-wrap ap-chapter__head">
+        <h2 id="places-title" className="ap-headline" data-reveal>
+          מטביליסי, לכל כיוון.
+        </h2>
+        <p className="ap-intro" data-reveal style={delay(100)}>
+          עיר, הרים, יין ואוכל. ועוד הרבה פינות שרק מקומיים מכירים.
+        </p>
+      </div>
+      <ul ref={track} className="ap-gallery" aria-label="מקומות">
+        {places.map((place, index) => (
+          <li key={place.name} className="ap-place" data-reveal style={delay(index * 70)}>
+            <img src={photo(place.image)} alt={place.alt} decoding="async" />
+            <div className="ap-place__text">
+              <span className="ap-place__ka ap-ka" lang="ka" dir="ltr">
+                {place.ka}
+              </span>
+              <span className="ap-place__name">{place.name}</span>
+              <span className="ap-place__line">{place.text}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="ap-wrap ap-gallery__controls">
+        <button type="button" className="ap-round" aria-label="המקום הקודם" onClick={() => move(-1)}>
+          ›
+        </button>
+        <button type="button" className="ap-round" aria-label="המקום הבא" onClick={() => move(1)}>
+          ‹
+        </button>
+      </div>
+    </section>
+  )
+}
+
+// The one live thing: pick a group, tap a Hebrew phrase, see it in Georgian and how it sounds.
+function Phrasebook() {
+  const [group, setGroup] = useState(1)
+  const [shown, setShown] = useState<Phrase>(phraseGroups[1].phrases[0])
+
+  function pickGroup(index: number) {
+    setGroup(index)
+    setShown(phraseGroups[index].phrases[0])
+  }
+
+  return (
+    <section aria-labelledby="say-title" className="ap-chapter ap-chapter--alt">
+      <div className="ap-wrap">
+        <div className="ap-chapter__head">
+          <h2 id="say-title" className="ap-headline" data-reveal>
+            מה שמיקי יגיד בשבילכם.
+          </h2>
+          <p className="ap-intro" data-reveal style={delay(100)}>
+            בגיאורגיה כותבים באלפבית שלא דומה לשום אלפבית אחר. מיקי מדבר בשבילכם, ובכל זאת נעים לדעת
+            כמה מילים.
+          </p>
+        </div>
+        <div className="ap-say" data-reveal>
+          <div>
+            <div className="ap-segment" role="group" aria-label="איפה">
+              {phraseGroups.map((item, index) => (
+                <button
+                  key={item.title}
+                  type="button"
+                  aria-pressed={index === group}
+                  onClick={() => pickGroup(index)}
+                >
+                  {item.title}
+                </button>
+              ))}
+            </div>
+            <div className="ap-chips">
+              {phraseGroups[group].phrases.map((phrase) => (
+                <button
+                  key={phrase.he}
+                  type="button"
+                  className="ap-chip"
+                  aria-pressed={phrase === shown}
+                  onClick={() => setShown(phrase)}
+                >
+                  {phrase.he}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="ap-say__shown" aria-live="polite">
+            <span key={shown.ka} className="ap-say__ka ap-ka" lang="ka" dir="ltr">
+              {shown.ka}
+            </span>
+            <span key={shown.say} className="ap-say__sound">
+              {shown.say}
+            </span>
+            <span className="ap-say__he">{shown.he}</span>
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// How it works: the steps scroll past; the photograph beside them stays and changes with the step
+// in the middle of the screen. On a phone each step carries its own photograph instead.
+function HowItWorks() {
+  const [active, setActive] = useState(0)
+  const list = useRef<HTMLOListElement>(null)
+
+  useEffect(() => {
+    const el = list.current
+    if (!el || !('IntersectionObserver' in window)) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActive(Number((entry.target as HTMLElement).dataset.step))
+        }
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    )
+    el.querySelectorAll('[data-step]').forEach((step) => observer.observe(step))
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <section id="how" aria-labelledby="how-title" className="ap-chapter">
+      <div className="ap-wrap">
+        <div className="ap-chapter__head">
+          <h2 id="how-title" className="ap-headline" data-reveal>
+            איך זה עובד.
+          </h2>
+        </div>
+        <div className="ap-how">
+          <ol ref={list} className="ap-how__steps">
+            {steps.map((step, index) => (
+              <li
+                key={step.title}
+                data-step={index}
+                className={`ap-step ${index === active ? 'is-active' : ''}`}
+              >
+                <div className="ap-step__phone">
+                  <img src={photo(step.image)} alt={step.alt} decoding="async" />
+                </div>
+                <h3 className="ap-step__title">{step.title}</h3>
+                <p className="ap-intro">{step.text}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="ap-how__stage" aria-hidden="true">
+            {steps.map((step, index) => (
+              <img
+                key={step.title}
+                src={photo(step.image)}
+                alt=""
+                decoding="async"
+                className={index === active ? 'is-active' : ''}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// What travelers say: the newest review with words. A signed-in traveler who hasn't written a
+// general review yet can add one here.
 function Voices() {
   const { user } = useAuth()
   const [data, setData] = useState<ReviewsResponse | null>(null)
@@ -562,59 +646,50 @@ function Voices() {
   const canAdd = user?.role === 'TRAVELER' && canWrite
   if (!quote && !canAdd) return null
 
-  const write = canAdd && (
-    <div className={writing ? 'lp-voice__form' : 'lp-voice__write'}>
-      {writing ? (
-        <div className="rounded-xl bg-surface p-4 text-ink">
-          <ReviewForm question="מה דעתכם על Georgia Trips?" onSent={addReview} />
-        </div>
-      ) : (
-        <button type="button" className="lp-link" onClick={() => setWriting(true)}>
-          טיילתם עם מיקי? כתבו מה אתם חושבים
-        </button>
-      )}
-    </div>
-  )
-
-  if (!quote) {
-    return (
-      <section aria-labelledby="voices-title" className="lp-grid lp-close">
-        <div>
-          <h2 id="voices-title">עוד אין ביקורות. אתם יכולים להיות הראשונים.</h2>
-          {write}
-        </div>
-      </section>
-    )
-  }
-
   const count = data.count === 1 ? 'ביקורת אחת' : `${data.count} ביקורות`
+  const stars = data.average === null ? 0 : Math.round(data.average)
 
   return (
-    <section aria-labelledby="voices-title" className="lp-voice">
-      <figure className="lp-voice__photo">
-        <img
-          src={photo('kazbegi-mountains-2.jpg')}
-          width={1440}
-          height={648}
-          decoding="async"
-          alt="רכס הרים ירוק ותלול בקזבגי, מתחת לשמיים כחולים"
-        />
-      </figure>
-      <div className="lp-grid lp-voice__inner">
-        <h2 id="voices-title" className="lp-voice__head">
-          מה אומרים המטיילים
+    <section id="voices" aria-labelledby="voices-title" className="ap-chapter ap-chapter--alt ap-voice">
+      <div className="ap-wrap">
+        <div className="ap-chapter__head">
+          <h2 id="voices-title" className="ap-headline" data-reveal>
+            מה אומרים המטיילים.
+          </h2>
           {data.average !== null && (
-            <span>
+            <p className="ap-intro" data-reveal style={delay(100)}>
+              <span className="ap-voice__stars" aria-hidden="true">
+                {'★'.repeat(stars)}
+              </span>{' '}
               {data.average.toFixed(1)} מתוך 5, לפי {count}
-            </span>
+            </p>
           )}
-        </h2>
-        <blockquote className="lp-voice__quote">“{quote.text}”</blockquote>
-        <p className="lp-voice__who">
-          {quote.authorName}
-          {quote.verifiedTrip && <span className="block">טיול מאומת</span>}
-        </p>
-        {write}
+        </div>
+        {quote ? (
+          <>
+            <blockquote className="ap-voice__quote" data-reveal>
+              “{quote.text}”
+            </blockquote>
+            <p className="ap-voice__who" data-reveal style={delay(100)}>
+              {quote.authorName}
+              {quote.verifiedTrip && ', טיול מאומת'}
+            </p>
+          </>
+        ) : (
+          <p className="ap-intro">עוד אין ביקורות. אתם יכולים להיות הראשונים.</p>
+        )}
+        {canAdd &&
+          (writing ? (
+            <div className="ap-voice__form rounded-xl bg-surface p-4 text-ink">
+              <ReviewForm question="מה דעתכם על Georgia Trips?" onSent={addReview} />
+            </div>
+          ) : (
+            <div className="ap-voice__write">
+              <button type="button" className="ap-more" onClick={() => setWriting(true)}>
+                טיילתם עם מיקי? כתבו מה אתם חושבים
+              </button>
+            </div>
+          ))}
       </div>
     </section>
   )
@@ -624,57 +699,33 @@ function Footer() {
   const { user } = useAuth()
 
   return (
-    <footer>
-      {/* The last photograph, with the name across its foot. */}
-      <div className="lp-foot">
-        <figure className="lp-foot__photo">
-          <img
-            src={photo('vendanges-en-kakhetie-b.jpg')}
-            width={1440}
-            height={1116}
-            decoding="async"
-            alt="ליתוגרפיה משנת 1847: בציר ענבים בכרם בקאחתי"
-          />
-        </figure>
-        <div className="lp-grid lp-foot__inner">
-          <nav className="lp-foot__links" aria-label="קישורים">
-            {user ? (
-              <Link to={user.role === 'GUIDE' ? '/guide' : '/trips'} className="lp-link">
-                {user.role === 'GUIDE' ? 'לוח המדריך' : 'הטיולים שלי'}
-              </Link>
-            ) : (
-              <>
-                <Link to="/register" className="lp-link">
-                  הרשמה
-                </Link>
-                <Link to="/login" className="lp-link">
-                  כניסה
-                </Link>
-              </>
-            )}
-          </nav>
-          <p className="lp-foot__about">טיולים פרטיים בגיאורגיה, עם מיקי, מדריך שנולד שם ומדבר עברית.</p>
-          <p className="lp-foot__name" aria-hidden="true">
-            Georgia Trips
-          </p>
-        </div>
-      </div>
-      <div className="lp-grid lp-credits">
-        <p>
+    <footer className="ap-foot">
+      <div className="ap-wrap">
+        <p className="ap-foot__credits">
           התמונות מוויקישיתוף:{' '}
           {credits.map((credit, index) => (
             <span key={credit.page}>
-              <a href={credit.page} className="lp-link">
-                {credit.what}
-              </a>
-              , <span dir="ltr">{credit.by}</span>,{' '}
-              <a href={credit.licenceUrl} className="lp-link">
-                {credit.licence}
-              </a>
+              <a href={credit.page}>{credit.what}</a>, <span dir="ltr">{credit.by}</span>,{' '}
+              <a href={credit.licenceUrl}>{credit.licence}</a>
               {index < credits.length - 1 ? '; ' : '.'}
             </span>
           ))}
         </p>
+        <div className="ap-foot__row">
+          <p>© 2026 Georgia Trips. טיולים פרטיים בגיאורגיה, עם מיקי.</p>
+          <nav className="ap-foot__links" aria-label="קישורים">
+            {user ? (
+              <Link to={user.role === 'GUIDE' ? '/guide' : '/trips'}>
+                {user.role === 'GUIDE' ? 'לוח המדריך' : 'הטיולים שלי'}
+              </Link>
+            ) : (
+              <>
+                <Link to="/register">הרשמה</Link>
+                <Link to="/login">כניסה</Link>
+              </>
+            )}
+          </nav>
+        </div>
       </div>
     </footer>
   )

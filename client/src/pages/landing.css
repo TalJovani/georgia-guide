@@ -1,1121 +1,801 @@
-/* The landing page. Photographs placed like prints on a gallery wall, each at its own size and
-   position on a 12-column grid, with quiet type between them. Three close stone tones (the tuff of
-   Georgian churches) carry the page; colour comes from the photographs. Georgian place names and
-   phrases are set in their own alphabet, which Miki reads for you.
-   Everything here is scoped under .lp so the app's own screens keep their look. */
+/* The landing page, set like an Apple product page: one huge centred headline per chapter, a
+   full-bleed photograph that opens as you scroll, white and light-grey chapters with one black one,
+   rounded "bento" cards, a sideways gallery, and one blue for every action.
+   Georgian names and phrases keep their own alphabet, which Miki reads for you.
+   Everything is scoped under .ap so the app's own screens keep their look. */
 
-.lp {
-  --bg: #eeecea;
-  --surface: #e4e1dd;
-  --ink: #333231;
-  --muted: #6b6763;
-  --accent: #2f6b45; /* the green of the Caucasus slopes, deep enough to call you */
-  --accent-hover: #1f4d30;
-  --accent-ink: #ffffff;
-  --field: #cdc3b6;
-  --paper: #f4f2ef; /* type set on photographs */
+.ap {
+  --bg: #ffffff;
+  --alt: #f5f5f7; /* Apple's light grey chapters */
+  --card: #ffffff;
+  --ink: #1d1d1f;
+  --muted: #6e6e73;
+  --faint: #d2d2d7; /* words not yet read in the statement */
+  --blue: #0071e3; /* buttons */
+  --link: #0066cc; /* text links */
+  --night: #000000;
+  --night-ink: #f5f5f7;
+  --night-muted: #a1a1a6;
 
-  --font-text: 'Frank Ruhl Libre', 'Noto Serif Georgian', Georgia, 'Times New Roman', serif;
-  --font-georgian: 'Noto Serif Georgian', 'Frank Ruhl Libre', Georgia, serif;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Hebrew', 'Heebo',
+    'Noto Sans Georgian', 'Segoe UI', Arial, sans-serif;
+  --font-ka: 'Noto Sans Georgian', 'Heebo', sans-serif;
 
-  /* Five sizes, no more. */
-  --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
-  --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
-  --step-lead: clamp(1.25rem, 1rem + 1.1vw, 2.125rem);
-  --step-head: clamp(2rem, 1.3rem + 3.2vw, 4rem);
-  --step-display: clamp(3.4rem, 8.3vw, 8rem);
+  --wide: 1040px;
+  --gutter: max(22px, env(safe-area-inset-left, 0px));
+  --radius: 28px;
+  --chapter: clamp(5.5rem, 11vw, 10rem);
 
-  --margin: 6vw;
-  --gap: 1.5vw;
-  --section: clamp(7.5rem, 14vw, 15rem);
-
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
-  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  /* Apple's own curve for things that arrive. */
+  --ease: cubic-bezier(0.28, 0.11, 0.32, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-text);
-  font-size: var(--step-body);
-  line-height: 1.55;
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
 
-/* The page behind the landing (overscroll, the strip under short screens) takes its ground. */
-:root:has(.lp) {
-  background: #eeecea;
+:root:has(.ap) {
+  background: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:has(.lp) {
-    background: #1c1b1a;
+  :root:has(.ap) {
+    background: #000000;
   }
-  .lp {
-    --bg: #1c1b1a;
-    --surface: #262422;
-    --ink: #e9e7e4;
-    --muted: #a8a49f;
-    --paper: #f1f0ee;
-    --accent: #8fd1a2;
-    --accent-hover: #b6e6c2;
-    --accent-ink: #1c1b1a;
-    --field: #2f2b27;
+  .ap {
+    --bg: #000000;
+    --alt: #161617;
+    --card: #1d1d1f;
+    --ink: #f5f5f7;
+    --muted: #86868b;
+    --faint: #424245;
+    --blue: #0071e3;
+    --link: #2997ff;
   }
 }
 
-/* Resets inside :where() weigh nothing, so any single class below can override them. */
-.lp :where(*, *::before, *::after) {
+/* Resets inside :where() weigh nothing, so any class below wins. */
+.ap :where(*, *::before, *::after) {
   box-sizing: border-box;
 }
-.lp :where(h1, h2, h3, p, ul, ol, figure, blockquote) {
+.ap :where(h1, h2, h3, p, ul, ol, figure, blockquote) {
   margin: 0;
 }
-.lp :where(ul, ol) {
+.ap :where(ul, ol) {
   padding: 0;
   list-style: none;
 }
-.lp :where(img) {
+.ap :where(img) {
   display: block;
-  max-width: 100%;
   width: 100%;
   height: 100%;
+  max-width: 100%;
   object-fit: cover;
 }
-.lp :where(h1, h2) {
-  font-weight: 300;
-  letter-spacing: -0.035em;
-  line-height: 1;
+.ap :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+.ap :where(h1, h2, h3) {
   text-wrap: balance;
 }
-.lp :where(p) {
+.ap :where(p) {
   text-wrap: pretty;
 }
-/* :where keeps this weak, so the button's own colour wins. */
-.lp :where(a) {
-  color: inherit;
-}
-.lp :focus-visible {
-  outline: 2px solid var(--accent);
+.ap :focus-visible {
+  outline: 2px solid var(--link);
   outline-offset: 3px;
 }
-.lp ::selection {
-  background: var(--accent);
-  color: var(--accent-ink);
+
+/* Chapters reached from the bar stop below it, and the page glides there. */
+.ap [id] {
+  scroll-margin-top: 64px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root:has(.ap) {
+    scroll-behavior: smooth;
+  }
 }
 
-.lp-grid {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--gap);
-  padding-left: max(var(--margin), env(safe-area-inset-left, 0px));
-  padding-right: max(var(--margin), env(safe-area-inset-right, 0px));
+.ap-wrap {
+  width: 100%;
+  max-width: calc(var(--wide) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
 }
 
-.lp-ka {
-  font-family: var(--font-georgian);
-  font-weight: 300;
+/* Type, in Apple's steps. */
+.ap-display {
+  font-size: clamp(3rem, 7.4vw, 6rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+}
+.ap-headline {
+  font-size: clamp(2.5rem, 5.4vw, 4rem);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.009em;
+}
+.ap-intro {
+  font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--muted);
+}
+.ap-ka {
+  font-family: var(--font-ka);
 }
 
-/* Buttons: one flat fill, square corners. On hover a deeper green fills in from the start edge
-   and the arrow steps forward; pressed, the button gives a little. No shadow, no gradient. */
-.lp-button {
-  position: relative;
-  isolation: isolate;
-  overflow: clip;
+/* Buttons: Apple's blue pill, and the blue text link with a chevron. */
+.ap-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.7rem;
-  min-height: 3.25rem;
-  padding: 0 1.6rem;
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-size: var(--step-body);
+  justify-content: center;
+  min-height: 44px;
+  padding: 11px 22px;
+  border-radius: 980px;
+  background: var(--blue);
+  color: #ffffff;
+  font-size: 17px;
   font-weight: 500;
-  text-decoration: none;
-  transition: transform 160ms var(--ease-out);
+  transition:
+    background-color 200ms ease,
+    transform 160ms var(--ease-out);
 }
-.lp-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--accent-hover);
-  transform: scaleX(0);
-  transform-origin: right; /* the start edge in Hebrew */
-  transition: transform 450ms var(--ease-out);
+.ap-pill--small {
+  min-height: 28px;
+  padding: 4px 12px;
+  font-size: 12px;
 }
-.lp-button__arrow {
-  display: inline-block;
-  transition: transform 300ms var(--ease-out);
-}
-.lp-button:active {
+.ap-pill:active {
   transform: scale(0.97);
 }
-.lp-button:focus-visible::before {
-  transform: scaleX(1);
+.ap-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  color: var(--link);
+  font-size: 17px;
 }
-.lp-link {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.3em;
-  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
-  transition: text-decoration-color 200ms ease;
+.ap-more::after {
+  content: '›';
+  display: inline-block;
+  transform: scaleX(-1); /* the chevron points forward, to the left, in Hebrew */
+  transition: translate 200ms var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
-  .lp-button:hover::before {
-    transform: scaleX(1);
+  .ap-pill:hover {
+    background: #0077ed;
   }
-  .lp-button:hover .lp-button__arrow {
-    transform: translateX(-5px);
+  .ap-more:hover {
+    text-decoration: underline;
   }
-  .lp-link:hover {
-    text-decoration-color: currentColor;
+  .ap-more:hover::after {
+    translate: -3px 0;
   }
 }
-
-.lp-caption {
-  margin-top: 0.6rem;
-  font-size: var(--step-small);
-  color: var(--muted);
-}
-
-/* Navigation: a link at the start, the name in the middle, one action at the end. */
-.lp-nav {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+.ap-actions {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding-block: 1.25rem;
-  font-size: var(--step-body);
+  justify-content: center;
+  gap: 1rem 2rem;
 }
-.lp-nav__start {
-  justify-self: start;
+
+/* The product bar: the name, the chapters, one small blue pill. Sticks to the top, frosted. */
+.ap-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+.ap-nav__row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  height: 52px;
+}
+.ap-nav__name {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-inline-end: auto;
+}
+.ap-nav__links {
   display: flex;
   gap: 1.5rem;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--ink) 80%, transparent);
 }
-.lp-nav__name {
-  font-size: var(--step-lead);
-  letter-spacing: -0.01em;
-  text-decoration: none;
-}
-.lp-nav__end {
-  justify-self: end;
-}
-
-/* Hero: the title steps diagonally across the middle; two photographs are placed against the step. */
-/* The screen's height is fixed, so the tall photograph is cropped by the bottom edge. */
-.lp-hero {
-  grid-template-rows: 3svh auto auto auto 1fr;
-  height: max(40rem, calc(100svh - 4.5rem));
-  overflow: clip;
-}
-.lp-hero__small {
-  grid-column: 10 / 13;
-  grid-row: 2;
-  aspect-ratio: 16 / 10;
-  margin-bottom: 1.25rem;
-  overflow: clip;
-}
-
-/* A photograph that feels alive: layers inside a clipped window, one motion each.
-   The picture is held slightly enlarged, so moving it never shows an edge. */
-.lp-alive {
-  position: relative;
-}
-.lp-alive__depth,
-.lp-alive__breath {
-  width: 100%;
-  height: 100%;
-}
-.lp-alive__depth {
-  will-change: transform;
-}
-.lp-alive__breath {
-  transform: scale(1.12);
-  transition: scale 900ms var(--ease-out);
-}
-/* The place's name rises from the bottom edge when you point at the picture. */
-.lp-alive__caption {
-  position: absolute;
-  inset: auto 0 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem 0.6rem;
-  padding: 0.55rem 0.75rem;
-  background: rgb(20 19 18 / 0.55);
-  color: var(--paper);
-  font-size: var(--step-small);
-  line-height: 1.3;
-  transform: translateY(101%);
-  transition: transform 450ms var(--ease-out);
-}
-.lp-alive__caption .lp-ka {
-  font-size: var(--step-body);
+.ap-nav__links a {
+  transition: color 150ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
-  .lp-alive:hover .lp-alive__breath {
-    scale: 1.06;
-  }
-  .lp-alive:hover .lp-alive__caption {
-    transform: none;
+  .ap-nav__links a:hover {
+    color: var(--link);
   }
 }
-/* The title is a real box on the same grid (subgrid), so its two lines can step. */
-.lp-hero__title {
-  grid-column: 2 / 13;
-  grid-row: 3 / 5;
-  display: grid;
-  grid-template-columns: subgrid;
-  grid-template-rows: subgrid;
-  font-size: var(--step-display);
+
+/* Hero: the headline, then the photograph that opens to the full width as you scroll. */
+.ap-hero {
+  padding-top: clamp(3.5rem, 8vw, 6.5rem);
+  text-align: center;
 }
-.lp-line {
-  display: block;
-  overflow: clip;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
-}
-.lp-line > span {
-  display: block;
-}
-.lp-hero__line1 {
-  grid-column: 1 / 12;
-  grid-row: 1;
-}
-.lp-hero__line2 {
-  grid-column: 5 / 12;
-  grid-row: 2;
-  align-self: start;
-}
-.lp-hero__tall {
-  grid-column: 2 / 6;
-  grid-row: 4 / 6;
-  margin-top: 1.5rem;
-  aspect-ratio: 4 / 5;
-  overflow: clip;
-}
-.lp-hero__text {
-  grid-column: 6 / 11;
-  grid-row: 5;
-  align-self: start;
-  margin-top: 2.5rem;
-  display: grid;
-  gap: 1.75rem;
-  justify-items: start;
-}
-.lp-hero__text p {
-  max-width: 36ch;
-  font-size: var(--step-lead);
-  line-height: 1.35;
+.ap-hero__eyebrow {
+  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.5rem);
+  font-weight: 600;
   color: var(--muted);
+  margin-bottom: 0.6rem;
 }
-.lp-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem 1.5rem;
-  font-size: var(--step-body);
+.ap-hero__sub {
+  margin: 1.25rem auto 2rem;
+  max-width: 30ch;
+}
+.ap-hero__media {
+  margin-top: clamp(3rem, 6vw, 5rem);
+  height: min(86svh, 56.25vw);
+  min-height: 420px;
+  overflow: clip;
+  border-radius: var(--radius);
 }
 
-/* Miki: a heading and a short note, then four facts set like a printed timetable. */
-/* Miki's section sits on the middle stone, so it reads as one panel after the open hero. */
-.lp-intro {
-  padding-block: 8rem;
-  background: var(--surface);
-  row-gap: 7.5rem;
+/* The statement: read it, and its words turn from grey to ink as you scroll. */
+.ap-statement {
+  padding-block: var(--chapter);
 }
-.lp-intro__head {
-  grid-column: 1 / 7;
-  font-size: var(--step-head);
-  align-self: end;
+.ap-statement p {
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem);
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -0.005em;
+  max-width: 22em;
 }
-.lp-intro__note {
-  grid-column: 9 / 13;
-  align-self: end;
+.ap-statement .ap-word {
+  color: var(--faint);
+  transition: color 300ms ease;
+}
+.ap-statement .ap-word.is-lit {
+  color: var(--ink);
+}
+
+/* Chapter heads. */
+.ap-chapter {
+  padding-block: var(--chapter);
+}
+.ap-chapter--alt {
+  background: var(--alt);
+}
+.ap-chapter__head {
+  text-align: center;
+  margin-bottom: clamp(2.5rem, 5vw, 4.5rem);
+}
+.ap-chapter__head .ap-intro {
+  margin: 1rem auto 0;
   max-width: 34ch;
 }
-.lp-facts {
-  grid-column: 1 / 13;
-  display: flex;
-  justify-content: space-between;
-  gap: 2rem;
-}
-.lp-facts strong {
-  display: block;
-  font-size: var(--step-head);
-  font-weight: 300;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  font-variant-numeric: tabular-nums;
-}
-.lp-facts span {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: var(--step-small);
-  color: var(--muted);
-}
-.lp-intro__photo {
-  grid-column: 7 / 13;
-  margin-top: -3rem;
-}
-.lp-intro__photo .lp-frame {
-  aspect-ratio: 4 / 3;
-}
-.lp-intro__aside {
-  grid-column: 1 / 6;
-  align-self: end;
-  max-width: 36ch;
-}
 
-.lp-frame {
+/* Bento: Miki in rounded cards of different widths. */
+.ap-bento {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 20px;
+}
+.ap-card {
+  position: relative;
   overflow: clip;
-  background: var(--surface);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
-
-/* Places: a two-line statement, then the list pushed to one side like a timetable. */
-.lp-places {
-  padding-top: var(--section);
-  row-gap: 6rem;
+.ap-card--3 {
+  grid-column: span 3;
 }
-.lp-places__head {
-  grid-column: 1 / 13;
-  font-size: var(--step-head);
-  padding-inline-start: 3vw;
+.ap-card--2 {
+  grid-column: span 2;
 }
-.lp-places__photo {
-  grid-column: 1 / 5;
-  grid-row: 2;
-  align-self: end;
-}
-.lp-places__photo .lp-frame {
-  aspect-ratio: 4 / 5;
-}
-.lp-places__label {
-  grid-column: 6 / 7;
-  grid-row: 2;
-  font-size: var(--step-small);
-  color: var(--muted);
-}
-.lp-places__table {
-  grid-column: 7 / 13;
-  grid-row: 2;
-  border-collapse: collapse;
-  width: 100%;
-}
-.lp-places__table td {
-  padding-block: 0.8rem;
-  vertical-align: baseline;
-}
-.lp-places__table tbody + tbody tr:first-child td {
-  padding-top: 2.75rem;
-}
-.lp-kind {
-  width: 22%;
-  font-size: var(--step-small);
-  color: var(--muted);
-}
-.lp-place strong {
-  font-weight: 500;
-}
-.lp-place span {
-  display: block;
-  font-size: var(--step-small);
-  color: var(--muted);
-  max-width: 34ch;
-}
-.lp-places__table .lp-ka {
-  text-align: left;
-  font-size: var(--step-lead);
+.ap-card__big {
+  font-size: clamp(3rem, 2rem + 4vw, 5.5rem);
+  font-weight: 700;
   line-height: 1;
-  white-space: nowrap;
+  letter-spacing: -0.02em;
+  color: var(--blue);
 }
-.lp-places__more {
-  grid-column: 7 / 13;
+.ap-card__big--mid {
+  font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+}
+.ap-card__title {
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-weight: 700;
+  line-height: 1.12;
+}
+.ap-card__text {
+  font-size: 17px;
   color: var(--muted);
-  max-width: 40ch;
+  max-width: 32ch;
+}
+.ap-card--photo {
+  padding: 0;
+  min-height: 360px;
+  color: #ffffff;
+}
+.ap-card--photo img {
+  position: absolute;
+  inset: 0;
+  transition: scale 900ms var(--ease);
+}
+.ap-card--photo .ap-card__over {
+  position: relative;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  background: linear-gradient(to top, rgb(0 0 0 / 0.62), rgb(0 0 0 / 0)); /* a neutral scrim for the words */
+}
+.ap-card--photo .ap-card__text {
+  color: rgb(255 255 255 / 0.85);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ap-card--photo:hover img {
+    scale: 1.04;
+  }
 }
 
-/* What Miki says for you: Hebrew phrases in three columns; the chosen one appears in Georgian. */
-.lp-say {
-  margin-top: var(--section);
-  padding-block: 9rem;
-  background: var(--field);
-  row-gap: 4rem;
+/* Places: a sideways gallery of tall cards, snapping one by one. */
+.ap-gallery {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: max(var(--gutter), calc((100vw - var(--wide)) / 2));
+  padding-inline: max(var(--gutter), calc((100vw - var(--wide)) / 2));
+  padding-bottom: 1.5rem;
+  scrollbar-width: none;
 }
-.lp-say__head {
-  grid-column: 1 / 7;
-  font-size: var(--step-lead);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+.ap-gallery::-webkit-scrollbar {
+  display: none;
 }
-.lp-say__intro {
-  grid-column: 1 / 7;
-  grid-row: 2;
-  max-width: 44ch;
+.ap-place {
+  position: relative;
+  flex: 0 0 min(372px, 78vw);
+  aspect-ratio: 3 / 4;
+  overflow: clip;
+  border-radius: var(--radius);
+  scroll-snap-align: start;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
-.lp-say__group {
-  grid-row: 3;
+.ap-place img {
+  position: absolute;
+  inset: 0;
+  transition: scale 900ms var(--ease);
 }
-.lp-say__group:nth-of-type(1) {
-  grid-column: 1 / 3;
+.ap-place__text {
+  position: relative;
+  padding: 1.75rem;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0));
+  display: grid;
+  gap: 0.25rem;
 }
-.lp-say__group:nth-of-type(2) {
-  grid-column: 3 / 5;
+/* Written left to right, but placed on the same side as the Hebrew name above and below it. */
+.ap-place__ka {
+  justify-self: start;
+  font-size: 17px;
+  font-weight: 600;
+  opacity: 0.85;
 }
-.lp-say__group:nth-of-type(3) {
-  grid-column: 5 / 7;
+.ap-place__name {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
 }
-.lp-say__group h3 {
-  font-size: var(--step-body);
-  font-weight: 500;
-  margin-bottom: 1rem;
+.ap-place__line {
+  font-size: 17px;
+  color: rgb(255 255 255 / 0.85);
 }
-.lp-say__group li + li {
-  margin-top: 0.15rem;
+@media (hover: hover) and (pointer: fine) {
+  .ap-place:hover img {
+    scale: 1.05;
+  }
 }
-.lp-say__phrase {
+.ap-gallery__controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 1rem;
+}
+.ap-round {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    transform 160ms var(--ease-out);
+}
+.ap-round:active {
+  transform: scale(0.94);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ap-round:hover {
+    background: color-mix(in srgb, var(--ink) 15%, transparent);
+  }
+}
+
+/* The black chapter: Tbilisi at night, edge to edge. */
+.ap-night {
+  background: var(--night);
+  color: var(--night-ink);
+  text-align: center;
+  padding-top: var(--chapter);
+  overflow: clip;
+}
+.ap-night .ap-intro {
+  color: var(--night-muted);
+  margin: 1.25rem auto 0;
+  max-width: 36ch;
+}
+.ap-night__media {
+  margin-top: clamp(3rem, 6vw, 5rem);
+  height: min(80svh, 56vw);
+  min-height: 380px;
+  overflow: clip;
+}
+
+/* The phrasebook: pick a group, tap a phrase, see it in Georgian. */
+.ap-say {
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: clamp(1.75rem, 4vw, 3.5rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: center;
+}
+.ap-segment {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 980px;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  margin-bottom: 1.5rem;
+}
+.ap-segment button {
   all: unset;
   cursor: pointer;
-  display: block;
-  padding-block: 0.2rem;
-  color: var(--muted);
-  font-size: var(--step-body);
-  line-height: 1.3;
-  transition: color 180ms ease;
-}
-.lp-say__phrase[aria-pressed='true'] {
+  padding: 7px 18px;
+  border-radius: 980px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--ink);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.3em;
+  transition:
+    background-color 250ms var(--ease),
+    color 250ms ease;
 }
-.lp-say__phrase:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+.ap-segment button[aria-pressed='true'] {
+  background: var(--card);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
 }
-@media (hover: hover) and (pointer: fine) {
-  .lp-say__phrase:hover {
-    color: var(--ink);
-  }
+.ap-segment button:focus-visible {
+  outline: 2px solid var(--link);
 }
-.lp-say__shown {
-  grid-column: 8 / 13;
-  grid-row: 2 / 4;
-  align-self: start;
-  position: sticky;
-  top: 2rem;
-}
-.lp-say__ka {
-  display: block;
-  font-size: var(--step-head);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  text-align: right;
-}
-.lp-say__sound {
-  display: block;
-  margin-top: 1rem;
-  font-size: var(--step-lead);
-}
-.lp-say__he {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: var(--step-small);
-  color: var(--muted);
-}
-
-/* How it works: three photographs down a falling diagonal, the words in the gaps. */
-/* The first row is only as tall as the heading, so the first photograph's extra height goes below it. */
-.lp-how {
-  padding-top: var(--section);
-  row-gap: 0;
-  grid-template-rows: min-content auto auto auto;
-}
-.lp-how__head {
-  grid-column: 7 / 13;
-  grid-row: 1;
-  font-size: var(--step-head);
-}
-.lp-stage {
-  display: contents;
-}
-.lp-stage__photo--1 {
-  grid-column: 1 / 5;
-  grid-row: 1 / 3;
-  aspect-ratio: 3 / 4;
-}
-.lp-stage__text--1 {
-  grid-column: 5 / 9;
-  grid-row: 2;
-  align-self: start;
-  margin-top: 3rem;
-}
-.lp-stage__photo--2 {
-  grid-column: 6 / 9;
-  grid-row: 3;
-  margin-top: 6rem;
-  aspect-ratio: 1;
-}
-.lp-stage__text--2 {
-  grid-column: 9 / 13;
-  grid-row: 3;
-  margin-top: 6rem;
-  align-self: start;
-}
-.lp-stage__photo--3 {
-  grid-column: 8 / 13;
-  grid-row: 4;
-  margin-top: 6rem;
-  aspect-ratio: 16 / 10;
-}
-.lp-stage__text--3 {
-  grid-column: 3 / 8;
-  grid-row: 4;
-  margin-top: 6rem;
-  align-self: start;
-  max-width: 36ch;
-}
-.lp-stage p {
-  max-width: 36ch;
-}
-.lp-stage b {
-  font-weight: 500;
-}
-
-/* What travelers say: one photograph edge to edge, the words on it. */
-.lp-voice {
-  position: relative;
-  margin-top: var(--section);
-  min-height: 90svh;
-  color: var(--paper);
-  overflow: clip;
-  display: grid;
-}
-.lp-voice__photo {
-  position: absolute;
-  inset: 0;
-}
-.lp-voice__photo img {
-  filter: brightness(0.62);
-}
-/* The text layer lies over the photograph; only its links and buttons take clicks. */
-.lp-voice__inner,
-.lp-foot__inner {
-  pointer-events: none;
-}
-.lp-voice__inner :is(a, button, form),
-.lp-foot__inner :is(a, button) {
-  pointer-events: auto;
-}
-.lp-voice__inner {
-  position: relative;
-  grid-template-rows: auto 1fr auto;
-  padding-block: 3rem 4rem;
-}
-/* The heading sits at the top of the far side, the words at the foot of the near side:
-   a diagonal across the photograph. */
-.lp-voice__head {
-  grid-column: 9 / 13;
-  text-align: end;
-  font-size: var(--step-body);
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 1.4;
-}
-.lp-voice__head span {
-  display: block;
-  font-weight: 400;
-}
-/* The quotation and who said it stay together, in one column at the start. */
-.lp-voice__inner {
-  grid-template-rows: auto 1fr auto auto;
-}
-.lp-voice__quote {
-  grid-column: 1 / 8;
-  grid-row: 3;
-  align-self: end;
-  font-size: var(--step-lead);
-  line-height: 1.2;
-  max-width: 24ch;
-}
-.lp-voice__who {
-  grid-column: 1 / 8;
-  grid-row: 4;
-  margin-top: 1rem;
-  font-size: var(--step-small);
-}
-.lp-voice__write {
-  grid-column: 1 / 13;
-  padding-top: 2.5rem;
-}
-.lp-voice__form {
-  grid-column: 1 / 7;
-  padding-top: 2.5rem;
-}
-
-/* The close: one plain sentence and one action on an almost empty screen. */
-.lp-close {
-  padding-block: 30svh 20svh;
-}
-.lp-close > div {
-  grid-column: 1 / 8;
-  display: grid;
-  gap: 1.5rem;
-  justify-items: start;
-}
-.lp-close h2 {
-  font-size: var(--step-lead);
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  line-height: 1.3;
-  max-width: 34ch;
-}
-
-/* Footer: the last photograph, with the name across its foot. */
-.lp-foot {
-  position: relative;
-  min-height: 100svh;
-  color: var(--paper);
-  overflow: clip;
-  display: grid;
-}
-.lp-foot__photo {
-  position: absolute;
-  inset: 0;
-}
-.lp-foot__photo img {
-  filter: brightness(0.45);
-}
-.lp-foot__inner {
-  position: relative;
-  grid-template-rows: auto 1fr auto;
-  padding-block: 2rem 3.5rem;
-}
-.lp-foot__links {
-  grid-column: 1 / 5;
+.ap-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
+  gap: 10px;
 }
-.lp-foot__about {
-  grid-column: 9 / 13;
-  justify-self: end;
-  text-align: end;
-  max-width: 28ch;
+.ap-chip {
+  all: unset;
+  cursor: pointer;
+  padding: 10px 18px;
+  border-radius: 980px;
+  background: var(--alt);
+  font-size: 17px;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    transform 160ms var(--ease-out);
 }
-.lp-foot__name {
-  grid-column: 1 / 13;
-  grid-row: 3;
-  font-size: var(--step-display);
-  line-height: 0.9;
-  letter-spacing: -0.04em;
-  direction: ltr;
-  text-align: right;
+.ap-chip:active {
+  transform: scale(0.96);
 }
-/* Credits sit on the plain ground under the last photograph, where they are easy to read. */
-.lp-credits {
-  padding-block: 2rem;
+.ap-chip[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--bg);
 }
-.lp-credits p {
-  grid-column: 1 / 13;
-  font-size: var(--step-small);
-  line-height: 1.6;
+.ap-chip:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+.ap-say__shown {
+  text-align: center;
+  min-height: 12rem;
+  display: grid;
+  align-content: center;
+  gap: 0.75rem;
+}
+.ap-say__ka {
+  font-size: clamp(2.25rem, 1.5rem + 3vw, 4rem);
+  font-weight: 600;
+  line-height: 1.1;
+}
+.ap-say__sound {
+  font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+  font-weight: 600;
+  color: var(--blue);
+}
+.ap-say__he {
+  font-size: 17px;
   color: var(--muted);
-  max-width: 120ch;
 }
 
-/* Mid widths: three phrase columns would be too narrow, so the third goes under the first. */
-@media (min-width: 761px) and (max-width: 1100px) {
-  .lp-say__group:nth-of-type(1) {
-    grid-column: 1 / 4;
-  }
-  .lp-say__group:nth-of-type(2) {
-    grid-column: 4 / 7;
-  }
-  .lp-say__group:nth-of-type(3) {
-    grid-column: 1 / 4;
-    grid-row: 4;
-  }
+/* How it works: the steps scroll, the photograph beside them stays and changes. */
+.ap-how {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+}
+.ap-how__steps {
+  display: grid;
+}
+.ap-step {
+  min-height: 70svh;
+  display: grid;
+  align-content: center;
+  gap: 0.75rem;
+  opacity: 0.35;
+  transition: opacity 500ms var(--ease);
+}
+.ap-step.is-active {
+  opacity: 1;
+}
+.ap-step__title {
+  font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.ap-step__phone {
+  display: none;
+}
+.ap-how__stage {
+  position: sticky;
+  top: 18svh;
+  height: 64svh;
+  align-self: start;
+  border-radius: var(--radius);
+  overflow: clip;
+}
+.ap-how__stage img {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  scale: 1.06;
+  transition:
+    opacity 700ms var(--ease),
+    scale 1200ms var(--ease);
+}
+.ap-how__stage img.is-active {
+  opacity: 1;
+  scale: 1;
 }
 
-/* A screen taller than it is wide (a tablet held upright) would leave the fixed-height hero half
-   empty, so there the hero is as tall as what it holds. */
-@media (max-aspect-ratio: 1 / 1) {
-  .lp-hero {
-    height: auto;
-  }
+/* What travelers say: one quotation, centred. */
+.ap-voice {
+  text-align: center;
+}
+.ap-voice__quote {
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem);
+  font-weight: 600;
+  line-height: 1.15;
+  max-width: 22em;
+  margin-inline: auto;
+}
+.ap-voice__who {
+  margin-top: 1.5rem;
+  color: var(--muted);
+}
+.ap-voice__stars {
+  color: var(--blue);
+  letter-spacing: 0.1em;
+}
+.ap-voice__write {
+  margin-top: 2rem;
+}
+.ap-voice__form {
+  max-width: 28rem;
+  margin: 2rem auto 0;
+  text-align: start;
 }
 
-/* Phone: its own composition. The unevenness survives as alternating widths. */
-@media (max-width: 760px) {
-  /* The same five sizes, set for a phone. */
-  .lp {
-    --margin: 20px;
-    --section: 6.5rem;
-    --step-small: 0.875rem;
-    --step-body: 1.125rem;
-    --step-lead: 1.375rem;
-    --step-head: 2.25rem;
-    --step-display: 15vw;
+/* The close. */
+.ap-close {
+  text-align: center;
+}
+.ap-close .ap-intro {
+  margin: 1.25rem auto 2rem;
+  max-width: 30ch;
+}
+
+/* Footer: small grey type on the light grey, like Apple's. */
+.ap-foot {
+  background: var(--alt);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  padding-block: 1.25rem 2.5rem;
+}
+.ap-foot__credits {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+.ap-foot__credits a {
+  color: var(--ink);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ap-foot__credits a:hover {
+    text-decoration: underline;
   }
-  .lp-grid {
-    display: block;
+}
+.ap-foot__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  padding-top: 1rem;
+}
+.ap-foot__links {
+  display: flex;
+  gap: 1.25rem;
+}
+.ap-foot__links a {
+  color: var(--ink);
+}
+
+/* Tablet and phone. */
+@media (max-width: 900px) {
+  .ap-card--3,
+  .ap-card--2 {
+    grid-column: span 6;
   }
-  /* On a phone the bar keeps the link and the name; the action is in the hero, one thumb away. */
-  .lp-nav {
-    display: grid;
-    grid-template-columns: 1fr auto;
+  .ap-say {
+    grid-template-columns: minmax(0, 1fr);
   }
-  .lp-nav__start {
-    gap: 1rem;
+  .ap-how {
+    grid-template-columns: minmax(0, 1fr);
   }
-  .lp-nav__name {
-    justify-self: end;
-  }
-  .lp-nav__end {
+  .ap-how__stage {
     display: none;
   }
-  .lp-hero {
-    height: auto;
-    padding-top: 1.5rem;
+  .ap-step {
+    min-height: 0;
+    opacity: 1;
+    padding-block: 1.5rem;
   }
-  .lp-hero__small {
-    width: 46%;
-    margin-inline-start: auto;
-    margin-bottom: 1.25rem;
-  }
-  .lp-hero__title {
+  .ap-step__phone {
     display: block;
-  }
-  .lp-hero__line2 {
-    padding-inline-start: 22vw;
-  }
-  .lp-hero__tall {
-    width: 72%;
-    margin-top: 1.5rem;
-    aspect-ratio: 4 / 5;
-  }
-  .lp-hero__text {
-    margin-top: 2rem;
-  }
-  .lp-intro__note {
-    margin-top: 1.25rem;
-  }
-  .lp-facts {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem 1.25rem;
-    margin-top: 3.5rem;
-  }
-  .lp-facts strong {
-    font-size: var(--step-lead);
-  }
-  .lp-intro__photo {
-    margin-top: 3rem;
-  }
-  .lp-intro__aside {
-    margin-top: 1.5rem;
-  }
-
-  .lp-places__head {
-    padding-inline-start: 0;
-  }
-  .lp-places__label {
-    display: none;
-  }
-  .lp-places__table {
-    margin-top: 3rem;
-  }
-  .lp-places__table tr {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    padding-block: 0.7rem;
-  }
-  .lp-places__table td {
-    padding-block: 0;
-  }
-  .lp-places__table tbody + tbody tr:first-child {
-    padding-top: 2.25rem;
-  }
-  .lp-places__table tbody + tbody tr:first-child td {
-    padding-top: 0;
-  }
-  .lp-kind {
-    grid-column: 1 / 3;
-    width: auto;
-  }
-  .lp-place {
-    grid-column: 1;
-  }
-  .lp-places__table .lp-ka {
-    grid-column: 2;
-    grid-row: 2;
-  }
-  .lp-places__photo {
-    width: 60%;
-    margin-inline-start: auto;
-    margin-top: 2.5rem;
-  }
-  .lp-places__more {
-    margin-top: 2rem;
-  }
-
-  .lp-say {
-    padding-block: 5rem;
-  }
-  .lp-say__intro {
-    margin-top: 1rem;
-  }
-  .lp-say__shown {
-    position: static;
-    margin-block: 2.5rem;
-    min-height: 9.5rem;
-  }
-  .lp-say__group + .lp-say__group {
-    margin-top: 2.5rem;
-  }
-  .lp-say__phrase {
-    padding-block: 0.45rem;
-  }
-
-  .lp-stage__photo--1 {
-    margin-top: 2.5rem;
     aspect-ratio: 4 / 3;
+    border-radius: var(--radius);
+    overflow: clip;
+    margin-bottom: 0.75rem;
   }
-  .lp-stage__photo--2 {
-    width: 62%;
-    margin-inline-start: auto;
-    margin-top: 3.5rem;
+}
+@media (max-width: 734px) {
+  .ap-nav__links {
+    display: none;
   }
-  .lp-stage__photo--3 {
-    width: 78%;
-    margin-top: 3.5rem;
+  .ap-nav__name {
+    font-size: 19px;
   }
-  .lp-stage__text--1,
-  .lp-stage__text--2,
-  .lp-stage__text--3 {
-    margin-top: 1.25rem;
+  .ap-hero__media {
+    border-radius: 18px;
+    min-height: 0;
+    height: 62svh;
   }
-  .lp-stage__text--2 {
-    width: 62%;
-    margin-inline-start: auto;
-  }
-
-  .lp-voice {
-    min-height: 80svh;
-  }
-  .lp-voice__inner {
-    display: flex;
-    flex-direction: column;
-    padding-block: 2rem 2.5rem;
-  }
-  .lp-voice__quote {
-    margin-top: auto;
-  }
-  .lp-voice__who {
-    margin-top: 1rem;
-    text-align: start;
-    align-self: start;
-  }
-
-  .lp-close {
-    padding-block: 20svh 14svh;
-  }
-
-  .lp-foot {
-    min-height: 88svh;
-  }
-  .lp-foot__inner {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .lp-foot__about {
-    text-align: start;
-  }
-  .lp-foot__name {
-    margin-top: auto;
+  .ap-card {
+    min-height: 200px;
   }
 }
 
-/* Motion. Hidden states exist only when motion is welcome and the page script is running. */
+/* Motion. Hidden starting states exist only when motion is welcome and the page script runs. */
 @media (prefers-reduced-motion: no-preference) {
-  .lp.is-live .lp-hero [data-line] {
-    transform: translateY(105%);
-    animation: lp-line 900ms var(--ease-expo) forwards;
-    animation-delay: calc(120ms + var(--i) * 110ms);
-  }
-  .lp.is-live .lp-hero [data-load] {
+  .ap.is-live [data-reveal] {
     opacity: 0;
-    transform: translateY(14px);
-    animation: lp-rise 600ms var(--ease-out) forwards;
-    animation-delay: var(--d, 500ms);
-  }
-  .lp.is-live .lp-hero [data-open] {
-    clip-path: inset(100% 0 0 0);
-    animation: lp-open 1100ms var(--ease-in-out) forwards;
-    animation-delay: var(--d, 150ms);
-  }
-  .lp.is-live .lp-hero [data-open] img {
-    transform: scale(1.1);
-    animation: lp-settle 1600ms var(--ease-expo) forwards;
-    animation-delay: var(--d, 150ms);
-  }
-
-  .lp.is-live [data-reveal] {
-    opacity: 0;
-    transform: translateY(24px);
+    translate: 0 40px;
     transition:
-      opacity 700ms var(--ease-out),
-      transform 900ms var(--ease-out);
+      opacity 1000ms var(--ease),
+      translate 1000ms var(--ease);
     transition-delay: var(--d, 0ms);
   }
-  .lp.is-live [data-reveal].is-in {
+  .ap.is-live [data-reveal].is-in {
     opacity: 1;
-    transform: none;
+    translate: 0 0;
   }
 
-  /* Photographs develop: a fade while the picture settles from a slight enlargement. */
-  .lp.is-live [data-shutter] {
+  /* The hero arrives: eyebrow, headline, line and actions, one after another. */
+  .ap.is-live .ap-hero [data-load] {
     opacity: 0;
-    transition: opacity 700ms var(--ease-out);
-    transition-delay: var(--d, 0ms);
-  }
-  .lp.is-live [data-shutter] img {
-    transform: scale(1.12);
-    transition: transform 1300ms var(--ease-soft);
-    transition-delay: var(--d, 0ms);
-  }
-  .lp.is-live [data-shutter].is-in {
-    opacity: 1;
-  }
-  .lp.is-live [data-shutter].is-in img {
-    transform: none;
+    translate: 0 24px;
+    animation: ap-arrive 1000ms var(--ease) forwards;
+    animation-delay: var(--d, 0ms);
   }
 
-  /* The small photograph breathes: a slow push in and across, then back. */
-  .lp-alive__breath {
-    animation: lp-breathe 16s ease-in-out infinite alternate;
-  }
-
-  /* Depth on scroll: the small photograph rises faster than the page, the tall one lags behind,
-     so the hero reads as layers. Listed after the load animations so both run. */
+  /* Scroll-linked: the hero photograph opens from an inset rounded window to the full width,
+     and the night photograph settles from a slight enlargement as it passes. */
   @supports (animation-timeline: scroll()) {
-    .lp.is-live .lp-hero .lp-hero__small[data-open] {
-      animation:
-        lp-open 1100ms var(--ease-in-out) var(--d, 150ms) forwards,
-        lp-float-up linear both;
-      animation-timeline: auto, scroll(root);
+    .ap-hero__media {
+      animation: ap-open linear both;
+      animation-timeline: scroll(root);
     }
-    .lp.is-live .lp-hero .lp-hero__tall[data-open] {
-      animation:
-        lp-open 1100ms var(--ease-in-out) var(--d, 150ms) forwards,
-        lp-float-down linear both;
-      animation-timeline: auto, scroll(root);
-    }
-  }
-
-  /* The mountains drift slowly while their section passes. */
-  @supports (animation-timeline: view()) {
-    .lp-voice__photo img {
-      animation: lp-drift linear both;
+    .ap-night__media img {
+      animation: ap-settle linear both;
       animation-timeline: view();
+      animation-range: entry 0% cover 60%;
     }
   }
-
-  .lp-say__ka,
-  .lp-say__sound {
-    animation: lp-swap 450ms var(--ease-out);
-  }
 }
 
-/* Less motion: the button still changes colour on hover, at once, without the sweep;
-   the photograph stays still and its name fades in instead of rising. */
-@media (prefers-reduced-motion: reduce) {
-  .lp-alive__breath {
-    transition: none;
-  }
-  .lp-alive:hover .lp-alive__breath {
-    scale: none;
-  }
-  .lp-alive__caption {
-    transform: none;
-    opacity: 0;
-    transition: opacity 200ms ease;
-  }
-  .lp-alive:hover .lp-alive__caption {
-    opacity: 1;
-  }
-  .lp-button::before,
-  .lp-button__arrow {
-    transition: none;
-  }
-  .lp-button:hover .lp-button__arrow {
-    transform: none;
+/* The hero photograph is full width wherever scroll timelines exist; without them it stays inset. */
+@supports (animation-timeline: scroll()) {
+  .ap-hero__media {
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
   }
 }
 
-@keyframes lp-breathe {
-  from {
-    transform: scale(1.12) translate(1.2%, 0.8%);
-  }
-  to {
-    transform: scale(1.2) translate(-1.2%, -0.8%);
-  }
-}
-/* Scroll-linked: the movement happens over the first tenth of the page, then holds. */
-@keyframes lp-float-up {
-  0% {
-    translate: 0 0;
-  }
-  12%,
-  100% {
-    translate: 0 -90px;
-  }
-}
-@keyframes lp-float-down {
-  0% {
-    translate: 0 0;
-  }
-  12%,
-  100% {
-    translate: 0 45px;
-  }
-}
-
-@keyframes lp-line {
-  to {
-    transform: none;
-  }
-}
-@keyframes lp-rise {
+@keyframes ap-arrive {
   to {
     opacity: 1;
-    transform: none;
+    translate: 0 0;
   }
 }
-@keyframes lp-open {
-  to {
-    clip-path: inset(0);
+@keyframes ap-open {
+  0% {
+    scale: 0.86;
+    border-radius: var(--radius);
+  }
+  9%,
+  100% {
+    scale: 1;
+    border-radius: 0;
   }
 }
-@keyframes lp-settle {
-  to {
-    transform: none;
-  }
-}
-@keyframes lp-drift {
+@keyframes ap-settle {
   from {
-    transform: scale(1.12) translateY(-4%);
+    scale: 1.15;
   }
   to {
-    transform: scale(1.12) translateY(4%);
+    scale: 1;
   }
 }
-@keyframes lp-swap {
+@keyframes ap-swap {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    translate: 0 12px;
+    filter: blur(4px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ap-say__ka,
+  .ap-say__sound {
+    animation: ap-swap 450ms var(--ease-out);
   }
 }
