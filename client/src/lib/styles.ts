@@ -12,6 +12,7 @@ export const dangerButtonClassName =
 
 export const cardClassName = 'rounded-xl bg-surface p-4 shadow-card'
 
-export const errorBoxClassName = 'rounded-xl bg-danger-soft p-3 text-sm text-danger'
+// Messages rise into place (.enter) instead of popping in and shoving the content below.
+export const errorBoxClassName = 'enter rounded-xl bg-danger-soft p-3 text-sm text-danger'
 
-export const successBoxClassName = 'rounded-xl bg-ok/15 p-3 text-sm text-ok'
+export const successBoxClassName = 'enter rounded-xl bg-ok/15 p-3 text-sm text-ok'
