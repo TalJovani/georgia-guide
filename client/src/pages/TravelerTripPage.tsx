@@ -43,6 +43,9 @@ export function TravelerTripPage() {
   const { id } = useParams()
   const [trip, setTrip] = useState<TravelerTripDetail | null>(null)
   const [error, setError] = useState('')
+  // True only right after the traveler approved the itinerary on this page, not when they open
+  // an already confirmed trip: the celebration belongs to that one moment.
+  const [justConfirmed, setJustConfirmed] = useState(false)
 
   useEffect(() => {
     apiFetch<{ tripRequest: TravelerTripDetail }>(`/api/trip-requests/${id}`)
@@ -59,6 +62,7 @@ export function TravelerTripPage() {
   // The server answers a status change with the trip row only, so keep the guide and itinerary we have.
   function applyUpdate(updated: TripRequest) {
     setTrip((prev) => (prev ? { ...prev, ...updated } : prev))
+    if (updated.status === 'CONFIRMED') setJustConfirmed(true)
   }
 
   return (
@@ -83,7 +87,7 @@ export function TravelerTripPage() {
               <MessageCircle className="icon" /> צ'אט עם המדריך
             </Link>
           )}
-          <TripBody trip={trip} onUpdate={applyUpdate} />
+          <TripBody trip={trip} onUpdate={applyUpdate} justConfirmed={justConfirmed} />
           {cancellableStatuses.includes(trip.status) && (
             <CancelTrip tripId={trip.id} onUpdate={applyUpdate} />
           )}
@@ -133,9 +137,11 @@ function TripHeader({ trip }: { trip: TravelerTripDetail }) {
 function TripBody({
   trip,
   onUpdate,
+  justConfirmed,
 }: {
   trip: TravelerTripDetail
   onUpdate: (trip: TripRequest) => void
+  justConfirmed: boolean
 }) {
   const schedule = (
     <ItinerarySchedule
@@ -172,7 +178,9 @@ function TripBody({
     case 'CONFIRMED':
       return (
         <section className="space-y-3">
-          <p className="text-center font-display text-xl text-ok"><Check className="icon" /> הכול סגור. נתראה בגאורגיה!</p>
+          <p className={`text-center font-display text-xl text-ok ${justConfirmed ? 'pop-slow' : ''}`}>
+            <Check className="icon" /> הכול סגור. נתראה בגאורגיה!
+          </p>
           {schedule}
         </section>
       )
