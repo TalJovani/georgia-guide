@@ -76,6 +76,7 @@ const phraseGroups: { title: string; phrases: Phrase[] }[] = [
 
 // Every picture on the page, credited as its licence asks.
 const credits = [
+  { what: 'טביליסי העתיקה מנריקלה', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/wiki/File:Tbilisi,_Old_Tbilisi_from_Narikala,_Georgia.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
   { what: 'כנסיית השילוש בגרגטי', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/w/index.php?curid=116990360', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
   { what: 'טביליסי, תחילת המאה ה־20', by: 'Sergei Prokudin-Gorskii', licence: 'נחלת הכלל', page: 'https://commons.wikimedia.org/wiki/File:View_of_Havlabar_(Tbilisi),_in_the_early_1900s,_Sergei_Mikhailovich_Prokudin-Gorskii.jpg', licenceUrl: 'https://creativecommons.org/publicdomain/mark/1.0/' },
   { what: 'מרפסות בטביליסי', by: 'Morten Oddvik', licence: 'CC BY 2.0', page: 'https://commons.wikimedia.org/w/index.php?curid=3353286', licenceUrl: 'https://creativecommons.org/licenses/by/2.0/' },
@@ -190,18 +191,18 @@ export function HomePage() {
           <div ref={depthLayer} className="lp-alive__depth">
             <div className="lp-alive__breath">
               <img
-                src={photo('ushguli-svaneti.jpg')}
-                width={460}
-                height={320}
-                alt="מטיילת בשמלה צבעונית מול הכפר אושגולי בסבנטי, עם מגדלי אבן ופסגות מושלגות"
+                src={photo('old-tbilisi-from-narikala.jpg')}
+                width={1600}
+                height={1000}
+                alt="טביליסי העתיקה ממבצר נריקלה: גגות אדומים, כנסייה עם כיפה מחודדת, נהר המטקוורי וגשר השלום"
               />
             </div>
           </div>
           <figcaption className="lp-alive__caption" aria-hidden="true">
             <span className="lp-ka" lang="ka" dir="ltr">
-              უშგული
+              ძველი თბილისი
             </span>
-            אושגולי, סבנטי
+            טביליסי העתיקה, מנריקלה
           </figcaption>
         </figure>
         <h1 className="lp-hero__title">
