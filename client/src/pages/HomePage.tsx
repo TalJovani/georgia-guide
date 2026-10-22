@@ -233,11 +233,16 @@ export function HomePage() {
           <p className="ap-hero__eyebrow" data-load style={delay(0)}>
             טיולים פרטיים בגיאורגיה
           </p>
-          <h1 className="ap-display" data-load style={delay(120)}>
-            גיאורגיה. בעברית.
+          {/* The name, cut out of the Caucasus: the letters are a window onto the mountains.
+              On a phone the two words stack, so each can be set large. */}
+          <h1 className="ap-brand" dir="ltr" data-load style={delay(120)}>
+            <span>Georgia</span> <span>Trips</span>
           </h1>
-          <p className="ap-intro ap-hero__sub" data-load style={delay(260)}>
-            טיול אישי עם מיקי, שנולד שם ומכיר כל פינה.
+          <p className="ap-brand__ka ap-ka" lang="ka" dir="ltr" aria-hidden="true" data-load style={delay(220)}>
+            საქართველო
+          </p>
+          <p className="ap-intro ap-hero__sub" data-load style={delay(320)}>
+            <strong>גיאורגיה. בעברית.</strong> טיול אישי עם מיקי, שנולד שם ומכיר כל פינה.
           </p>
           <div className="ap-actions" data-load style={delay(380)}>
             <PrimaryAction />

@@ -238,8 +238,51 @@
   margin-bottom: 0.6rem;
 }
 .ap-hero__sub {
-  margin: 1.25rem auto 2rem;
-  max-width: 30ch;
+  margin: 1.5rem auto 2rem;
+  max-width: 34ch;
+}
+.ap-hero__sub strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* The name, as large as the page allows, cut out of a photograph of the Kazbegi mountains (dark
+   green and blue, so every letter holds on white and on black): the letters are a window, and the
+   view inside them drifts slowly. Heavy weight, so there is picture in every
+   stroke. Browsers that cannot fill text with an image get the name in ink. */
+.ap-brand {
+  font-size: clamp(3rem, 12vw, 11rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  padding-bottom: 0.06em; /* room for the descenders of g and p inside the clip */
+  color: var(--ink);
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .ap-brand {
+    color: transparent;
+    background-image: url('/landing/kazbegi-mountains-2.jpg');
+    background-size: cover;
+    background-position: 50% 60%;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+}
+.ap-brand__ka {
+  margin-top: 0.6rem;
+  font-size: clamp(1rem, 0.85rem + 0.6vw, 1.375rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+@media (max-width: 734px) {
+  .ap-brand {
+    font-size: 25vw;
+    line-height: 0.88;
+  }
+  .ap-brand span {
+    display: block;
+  }
 }
 .ap-hero__media {
   margin-top: clamp(3rem, 6vw, 5rem);
@@ -758,6 +801,26 @@
   .ap-hero__media {
     width: 100vw;
     margin-inline: calc(50% - 50vw);
+  }
+}
+
+/* The view inside the name drifts across, slowly, and back. */
+@media (prefers-reduced-motion: no-preference) {
+  .ap-brand {
+    animation: ap-drift 22s ease-in-out infinite alternate;
+  }
+  .ap.is-live .ap-hero .ap-brand[data-load] {
+    animation:
+      ap-arrive 1000ms var(--ease) var(--d, 0ms) forwards,
+      ap-drift 22s ease-in-out infinite alternate;
+  }
+}
+@keyframes ap-drift {
+  from {
+    background-position: 15% 55%;
+  }
+  to {
+    background-position: 85% 70%;
   }
 }
 
