@@ -32,6 +32,80 @@ enum KosherPreference {
   MEHADRIN
 }
 
+// The planning wizard's answers (TripPreferences). Every question is required; where "none" is
+// a real answer it is one of the choices, so an empty value means "none", never "skipped".
+
+enum BudgetLevel {
+  BUDGET
+  MID
+  LUXURY
+}
+
+enum Mobility {
+  NO_LIMITS
+  LIMITED_WALKING
+  WHEELCHAIR
+}
+
+enum DietaryNeed {
+  VEGETARIAN
+  VEGAN
+  GLUTEN_FREE
+  LACTOSE_FREE
+}
+
+enum Transport {
+  RENTAL_CAR
+  PRIVATE_DRIVER
+  PUBLIC_TRANSPORT
+  WALK_AND_TAXI
+}
+
+enum Lodging {
+  SINGLE_BASE
+  MOVING
+}
+
+enum Pace {
+  RELAXED
+  BALANCED
+  PACKED
+}
+
+enum DailyRhythm {
+  EARLY_BIRD
+  FLEXIBLE
+  LATE_RISER
+}
+
+enum TravelStyle {
+  CLASSIC
+  MIXED
+  LIKE_A_LOCAL
+}
+
+enum TripPurpose {
+  COUPLE
+  HONEYMOON
+  FAMILY
+  FRIENDS
+  SOLO
+  CELEBRATION
+}
+
+enum Interest {
+  NATURE
+  HISTORY
+  FOOD
+  WINE
+  ART
+  SHOPPING
+  NIGHTLIFE
+  ADVENTURE
+  BEACHES
+  CULTURE
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -47,36 +121,70 @@ model User {
   pushSubscriptions PushSubscription[]
   tripRequests      TripRequest[]      @relation("TravelerTrips")
   guidedRequests    TripRequest[]      @relation("GuideTrips")
+  guideDestinations GuideDestination[]
+}
+
+/// One row per country a guide covers. Countries are not a table: they are the fixed ISO 3166
+/// list, and their Hebrew names come from Intl.DisplayNames.
+model GuideDestination {
+  /// ISO 3166-1 alpha-2, e.g. "GE", "PT".
+  countryCode String
+  createdAt   DateTime @default(now())
+
+  guideId String
+  guide   User   @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@id([guideId, countryCode])
+  @@index([countryCode])
+}
+
+/// What one day costs one person in a country at each budget level, in ILS. Asked from the AI the
+/// first time someone picks the country and kept, so the budget step can show "about X-Y" under
+/// each level. Refreshed once it is old (prices change).
+model DestinationCostEstimate {
+  countryCode  String   @id
+  budgetPerDay Int
+  midPerDay    Int
+  luxuryPerDay Int
+  updatedAt    DateTime @updatedAt
 }
 
 model TripRequest {
-  id               String           @id @default(uuid())
-  startDate        DateTime         @db.Date
-  endDate          DateTime         @db.Date
-  travelersCount   Int
-  /// Budget range for the whole group (not per person), in `currency`.
-  budgetMin        Int?
-  budgetMax        Int?
-  currency         String           @default("ILS")
-  kosher           KosherPreference @default(NONE)
-  needsFlights     Boolean          @default(false)
-  needsHotels      Boolean          @default(false)
-  needsCarRental   Boolean          @default(false)
+  id                 String           @id @default(uuid())
+  /// ISO 3166-1 alpha-2 ("GE", "PT"). Here and not in the preferences, because guides are
+  /// matched to trips by it.
+  destinationCountry String
+  startDate          DateTime         @db.Date
+  endDate            DateTime         @db.Date
+  /// Everyone on the trip. With preferences, the server works it out from adults, children and
+  /// seniors, so the screens that already show it keep working.
+  travelersCount     Int
+  /// Required in the wizard; empty only on requests made before it.
+  budgetLevel        BudgetLevel?
+  /// Budget range for the whole group (not per person), in `currency`. Optional: when given,
+  /// it decides, and the level only sets the style.
+  budgetMin          Int?
+  budgetMax          Int?
+  currency           String           @default("ILS")
+  kosher             KosherPreference @default(NONE)
+  needsFlights       Boolean          @default(false)
+  needsHotels        Boolean          @default(false)
+  needsCarRental     Boolean          @default(false)
   /// Full package: flights, lodging, attractions and entertainment.
   /// When true, needsFlights and needsHotels are true as well.
-  needsFullPackage Boolean          @default(false)
-  description      String
-  status           TripStatus       @default(NEW)
+  needsFullPackage   Boolean          @default(false)
+  description        String
+  status             TripStatus       @default(NEW)
   /// When the trip was cancelled. Compared with startDate for the refund policy.
-  cancelledAt      DateTime?
+  cancelledAt        DateTime?
   /// What the traveler asked to change, the last time they requested changes.
-  revisionNote     String?
+  revisionNote       String?
   /// AI summary of the request for the guide: short Hebrew tags, and one idea for the route.
   /// Empty / null until the summary has been made (or if making it failed).
-  aiTags           String[]         @default([])
-  aiSuggestion     String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  aiTags             String[]         @default([])
+  aiSuggestion       String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   travelerId String
   traveler   User    @relation("TravelerTrips", fields: [travelerId], references: [id])
@@ -86,10 +194,53 @@ model TripRequest {
   messages      Message[]
   review        Review?
   itineraryDays ItineraryDay[]
+  /// The wizard's answers. Missing on requests made before the wizard.
+  preferences   TripPreferences?
 
   @@index([travelerId])
   @@index([guideId])
   @@index([status])
+  @@index([destinationCountry])
+}
+
+/// What the traveler told the planning wizard, the input of the AI plan. Kept apart from
+/// TripRequest, which tracks the trip's state (status, guide, cancellation): written once,
+/// read when planning.
+model TripPreferences {
+  id             String        @id @default(uuid())
+  /// Cities or regions they want; empty = "you choose for us".
+  cities         String[]
+  /// "HH:MM", 24-hour, like the itinerary's times. Day one starts after landing.
+  arrivalTime    String
+  departureTime  String
+  adults         Int
+  childrenAges   Int[]
+  seniors        Int
+  mobility       Mobility
+  /// Empty = eats everything (kosher stays on TripRequest).
+  dietaryNeeds   DietaryNeed[]
+  /// null = no allergies, an explicit choice in the form.
+  allergies      String?
+  transport      Transport
+  lodging        Lodging
+  /// Where they already booked, if they did.
+  lodgingBooked  String?
+  /// The two boxes of the interests step. An interest is in one of them at most (checked by the
+  /// server); in neither = not interested.
+  lovedInterests Interest[]
+  likedInterests Interest[]
+  pace           Pace
+  dailyRhythm    DailyRhythm
+  style          TravelStyle
+  purpose        TripPurpose
+  firstVisit     Boolean
+  /// null = "surprise us" / "nothing to avoid".
+  mustSee        String?
+  avoid          String?
+  createdAt      DateTime      @default(now())
+
+  tripRequestId String      @unique
+  tripRequest   TripRequest @relation(fields: [tripRequestId], references: [id], onDelete: Cascade)
 }
 
 /// One day of the itinerary the guide builds for a trip request.

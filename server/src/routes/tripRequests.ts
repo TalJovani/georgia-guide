@@ -81,6 +81,8 @@ tripRequestsRouter.post("/", requireRole("TRAVELER"), async (req, res) => {
     const tripRequest = await prisma.tripRequest.create({
         data: {
             ...rest,
+            // The old request form is Georgia-only. The planning wizard will send its own country.
+            destinationCountry: "GE",
             startDate: new Date(startDate),
             endDate: new Date(endDate),
             budgetMin: budgetMin ?? null,
