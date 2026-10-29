@@ -1,0 +1,9 @@
+
+# working files of the design-taste-frontend skill (screenshots, direction sheets)
+.taste-skill/
+
+# browser test logs and screenshots from the Playwright MCP server
+.playwright-mcp/
+
+# personal Claude Code settings for this machine
+.claude/settings.local.json
