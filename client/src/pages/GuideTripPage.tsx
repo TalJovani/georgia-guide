@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router'
 import { AiSummaryCard } from '../components/AiSummaryCard'
 import { DayTabs, ItinerarySchedule } from '../components/ItinerarySchedule'
 import { TextField } from '../components/TextField'
+import { Loading } from '../components/Loading'
 import { apiFetch, ApiError } from '../lib/api'
 import { formatDate, tripLengthInDays } from '../lib/dates'
 import {
@@ -12,6 +13,7 @@ import {
   primaryButtonClassName,
   secondaryButtonClassName,
   successBoxClassName,
+  pageTitleClassName,
 } from '../lib/styles'
 import { formatBudget, servicesSummary, statusPillClassName } from '../trips/format'
 import {
@@ -123,7 +125,7 @@ export function GuideTripPage() {
         </p>
       )}
 
-      {trip === null && !error && <p className="text-muted">טוען...</p>}
+      {trip === null && !error && <Loading />}
 
       {trip && (
         <>
@@ -149,7 +151,7 @@ function TripSummary({ trip }: { trip: GuideTripDetail }) {
   return (
     <section className={`${cardClassName} space-y-2`}>
       <div className="flex items-center justify-between gap-2">
-        <h1 className="font-display text-2xl text-brand">מסלול · {trip.traveler.name}</h1>
+        <h1 className={pageTitleClassName}>מסלול · {trip.traveler.name}</h1>
         <span
           className={`rounded-full px-2.5 py-0.5 text-xs font-bold whitespace-nowrap ${statusPillClassName[trip.status]}`}
         >
@@ -263,8 +265,8 @@ function ItineraryEditor({
         {trip.status === 'IN_REVISION' ? 'עדכון המסלול לפי בקשת המטיילים' : 'בניית המסלול'}
       </h2>
       {trip.status === 'IN_REVISION' && trip.revisionNote && (
-        <div className={`${cardClassName} space-y-1 border border-accent`}>
-          <p className="text-sm font-bold text-accent">מה המטיילים ביקשו לשנות</p>
+        <div className={`${cardClassName} space-y-1 ring-2 ring-brand`}>
+          <p className="text-sm font-semibold text-accent">מה המטיילים ביקשו לשנות</p>
           <p className="text-sm whitespace-pre-line">{trip.revisionNote}</p>
         </div>
       )}
@@ -297,7 +299,7 @@ function ItineraryEditor({
           {day.activities.map((activity) => (
             <li
               key={activity.key}
-              className={`space-y-2 rounded-xl border border-line p-3 ${activity.key === addedKey ? 'enter' : ''}`}
+              className={`space-y-2 rounded-2xl bg-canvas p-3.5 ${activity.key === addedKey ? 'enter' : ''}`}
             >
               <div className="grid grid-cols-2 gap-2">
                 <TextField

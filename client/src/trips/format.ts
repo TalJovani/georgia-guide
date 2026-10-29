@@ -1,9 +1,11 @@
 import type { TripRequest, TripStatus } from './types'
 
+// One pale pill per state; only the state that waits on the traveler (the itinerary is ready to
+// read) is filled in solid blue, so it is the one that catches the eye in a list.
 export const statusPillClassName: Record<TripStatus, string> = {
-  NEW: 'bg-brand-soft text-brand',
-  ITINERARY_SENT: 'bg-accent-soft text-accent',
-  IN_REVISION: 'bg-accent-soft text-accent',
+  NEW: 'bg-brand-soft text-accent',
+  ITINERARY_SENT: 'bg-brand text-on-brand',
+  IN_REVISION: 'bg-ai/12 text-ai',
   CONFIRMED: 'bg-ok/15 text-ok',
   IN_PROGRESS: 'bg-ok/15 text-ok',
   COMPLETED: 'bg-line text-muted',

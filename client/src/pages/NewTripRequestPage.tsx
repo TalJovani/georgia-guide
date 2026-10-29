@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
 import { ChoiceChip } from '../components/ChoiceChip'
 import { FormField } from '../components/FormField'
 import { TextField } from '../components/TextField'
 import { apiFetch, ApiError } from '../lib/api'
 import { todayInIsrael } from '../lib/dates'
-import { errorBoxClassName, inputClassName, primaryButtonClassName } from '../lib/styles'
+import { errorBoxClassName, inputClassName, primaryButtonClassName, pageTitleClassName } from '../lib/styles'
+import { useScreenNavigate } from '../lib/useScreenNavigate'
 import { kosherLabels, type KosherPreference } from '../trips/types'
 
 // Hebrew messages for fields the server rejected.
@@ -20,7 +20,7 @@ const fieldMessages: Record<string, string> = {
 }
 
 export function NewTripRequestPage() {
-  const navigate = useNavigate()
+  const navigate = useScreenNavigate()
   const today = todayInIsrael()
 
   const [startDate, setStartDate] = useState('')
@@ -82,7 +82,7 @@ export function NewTripRequestPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="font-display text-2xl text-brand">בקשת טיול חדשה</h1>
+        <h1 className={pageTitleClassName}>בקשת טיול חדשה</h1>
         <p className="text-sm text-muted">
           ספרו לנו על הטיול שאתם מדמיינים, והמדריך יחזור אליכם עם מסלול מותאם.
         </p>

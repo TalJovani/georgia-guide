@@ -1,9 +1,11 @@
-import { BrowserRouter, Outlet, Route, Routes } from 'react-router'
+import { BrowserRouter, Link, Navigate, Outlet, Route, Routes } from 'react-router'
 import { AuthProvider } from './auth/AuthProvider'
+import { homePath } from './auth/context'
 import { useAuth } from './auth/useAuth'
 import { UnreadProvider } from './chat/UnreadProvider'
 import { AppBar } from './components/AppBar'
 import { RequireAuth } from './components/RequireAuth'
+import { ScreenTransitions } from './components/ScreenTransitions'
 import { AccountPage } from './pages/AccountPage'
 import { GuideDashboardPage } from './pages/GuideDashboardPage'
 import { GuideReviewsPage } from './pages/GuideReviewsPage'
@@ -20,13 +22,25 @@ import { TripChatPage } from './pages/TripChatPage'
 // The landing page is not in here: it is a full-width page with its own header.
 function AppLayout() {
   return (
-    <main className="min-h-screen bg-canvas px-4 py-6 text-ink">
+    <main className="min-h-screen bg-canvas px-4 pb-10 text-ink">
       <div className="mx-auto max-w-md space-y-6">
         <AppBar />
         <Outlet />
+        <footer className="pt-6 text-center text-sm">
+          <Link to="/about" className="text-muted transition-colors duration-150 hover:text-accent">
+            על מיקי ו־Georgia Trips
+          </Link>
+        </footer>
       </div>
     </main>
   )
+}
+
+// The front door. Visitors get the landing page; someone already signed in has seen it, so they
+// go straight to their own page. The landing page stays open to everyone at /about.
+function FrontDoor() {
+  const { user } = useAuth()
+  return user ? <Navigate to={homePath(user.role)} replace /> : <HomePage />
 }
 
 function AppRoutes() {
@@ -38,7 +52,8 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<FrontDoor />} />
+      <Route path="/about" element={<HomePage />} />
       <Route element={<AppLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -122,6 +137,7 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
+      <ScreenTransitions />
       <AuthProvider>
         <UnreadProvider>
           <AppRoutes />

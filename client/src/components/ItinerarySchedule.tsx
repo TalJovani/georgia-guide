@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { dateOfTripDay, tripLengthInDays } from '../lib/dates'
 import { cardClassName } from '../lib/styles'
 import type { ItineraryDay } from '../trips/types'
 
-// A row of buttons, one per trip day. Days that already have a plan get a dot.
+// A row of days in a grey track, like Apple's segmented control: one white marker sits under
+// the chosen day and slides to the next one you pick, instead of each button lighting up on
+// its own. Days that already have a plan get a dot.
 export function DayTabs({
   startDate,
   filled,
@@ -15,8 +17,29 @@ export function DayTabs({
   selected: number
   onSelect: (index: number) => void
 }) {
+  const track = useRef<HTMLDivElement>(null)
+  const [marker, setMarker] = useState<{ left: number; width: number } | null>(null)
+
+  // Measure the chosen tab before the browser paints, so the marker never shows in the wrong place.
+  useLayoutEffect(() => {
+    const tab = track.current?.children[selected + 1] as HTMLElement | undefined
+    if (!tab) return
+    setMarker({ left: tab.offsetLeft, width: tab.offsetWidth })
+    tab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+  }, [selected, filled.length])
+
   return (
-    <div role="tablist" aria-label="ימי הטיול" className="flex gap-2 overflow-x-auto pb-1">
+    <div
+      ref={track}
+      role="tablist"
+      aria-label="ימי הטיול"
+      className="relative flex gap-1 overflow-x-auto rounded-2xl bg-ink/[0.06] p-1 [scrollbar-width:none]"
+    >
+      <span
+        aria-hidden="true"
+        className="day-marker absolute inset-y-1 rounded-xl bg-surface shadow-[0_1px_3px_rgb(0_0_0/0.12)]"
+        style={marker ? { left: marker.left, width: marker.width } : { opacity: 0 }}
+      />
       {filled.map((isFilled, index) => (
         <button
           key={index}
@@ -24,13 +47,13 @@ export function DayTabs({
           role="tab"
           aria-selected={index === selected}
           onClick={() => onSelect(index)}
-          className="press shrink-0 rounded-xl border border-line bg-surface px-3 py-1.5 text-center text-sm aria-selected:border-accent aria-selected:font-bold aria-selected:text-accent"
+          className="press relative shrink-0 rounded-xl px-3.5 py-1.5 text-center text-sm text-ink/70 transition-colors aria-selected:font-semibold aria-selected:text-ink"
         >
           <span className="block">
             יום {index + 1}
             {isFilled && <span className="mr-1 text-accent">•</span>}
           </span>
-          <span className="block text-xs text-muted">{dateOfTripDay(startDate, index + 1)}</span>
+          <span className="block text-xs text-muted tabular-nums">{dateOfTripDay(startDate, index + 1)}</span>
         </button>
       ))}
     </div>
@@ -57,7 +80,15 @@ export function ItinerarySchedule({
   const [selected, setSelected] = useState(
     () => initialDayIndex ?? Math.max(0, days.findIndex(Boolean)),
   )
+  // Which way the last switch went, so the day's plan slides in from that side.
+  const [step, setStep] = useState<'later' | 'earlier' | null>(null)
   const day = days[selected]
+
+  function choose(index: number) {
+    if (index === selected) return
+    setStep(index > selected ? 'later' : 'earlier')
+    setSelected(index)
+  }
 
   return (
     <div className="space-y-3">
@@ -65,15 +96,19 @@ export function ItinerarySchedule({
         startDate={startDate}
         filled={days.map(Boolean)}
         selected={selected}
-        onSelect={setSelected}
+        onSelect={choose}
       />
 
-      <div role="tabpanel" className={`${cardClassName} space-y-3`}>
+      <div
+        key={selected}
+        role="tabpanel"
+        className={`${cardClassName} space-y-3 ${step ? `day-in day-in--${step}` : ''}`}
+      >
         {!day ? (
           <p className="text-sm text-muted">אין תוכנית ליום הזה.</p>
         ) : (
           <>
-            <h3 className="font-display text-xl text-brand">{day.title}</h3>
+            <h3 className="font-display text-xl font-semibold text-ink">{day.title}</h3>
             {day.activities.length === 0 && (
               <p className="text-sm text-muted">לא נקבעו פעילויות לפי שעות.</p>
             )}
@@ -81,9 +116,9 @@ export function ItinerarySchedule({
               {day.activities.map((activity) => (
                 <li
                   key={activity.id}
-                  className="grid grid-cols-[6.5rem_1fr] gap-3 border-r-2 border-accent pr-3"
+                  className="grid grid-cols-[6.5rem_1fr] gap-3 border-r-[3px] border-brand pr-3"
                 >
-                  <span dir="ltr" className="text-right font-semibold text-accent">
+                  <span dir="ltr" className="text-right font-medium text-muted tabular-nums">
                     {activity.startTime}–{activity.endTime}
                   </span>
                   <span>

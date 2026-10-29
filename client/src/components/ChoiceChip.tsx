@@ -12,7 +12,7 @@ type ChoiceChipProps = {
 // (visually hidden) so keyboards and screen readers still work.
 export function ChoiceChip({ checked, disabled = false, onChange, children }: ChoiceChipProps) {
   return (
-    <label className="press cursor-pointer rounded-full border border-line bg-surface px-3.5 py-1.5 text-sm select-none has-checked:border-accent has-checked:font-bold has-checked:text-accent has-disabled:cursor-default has-disabled:opacity-60 has-focus-visible:ring-2 has-focus-visible:ring-accent/40">
+    <label className="press cursor-pointer rounded-full bg-surface px-4 py-2 text-sm select-none has-checked:bg-brand has-checked:font-semibold has-checked:text-on-brand has-disabled:cursor-default has-disabled:opacity-50 has-focus-visible:ring-4 has-focus-visible:ring-brand/25">
       <input
         type="checkbox"
         className="sr-only"
@@ -20,7 +20,7 @@ export function ChoiceChip({ checked, disabled = false, onChange, children }: Ch
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
       />
-      {checked && <><Check className="icon" /> </>}
+      {checked && <><Check className="icon pop" /> </>}
       {children}
     </label>
   )

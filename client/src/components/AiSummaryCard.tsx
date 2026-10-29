@@ -30,14 +30,14 @@ export function AiSummaryCard({ tripId, initial }: { tripId: string; initial: Su
   }
 
   return (
-    <div className="space-y-2 rounded-xl border-[1.5px] border-dashed border-ai p-3">
+    <div className="space-y-2 rounded-2xl bg-ai/[0.07] p-4">
       <p className="text-xs font-bold text-ai"><Sparkles className="icon" /> סיכום AI</p>
 
       {summary.aiTags.length > 0 ? (
         <>
           <div className="flex flex-wrap gap-1.5">
             {summary.aiTags.map((tag) => (
-              <span key={tag} className="rounded-md border border-line bg-canvas px-2 py-0.5 text-sm">
+              <span key={tag} className="rounded-full bg-surface px-2.5 py-0.5 text-sm">
                 {tag}
               </span>
             ))}

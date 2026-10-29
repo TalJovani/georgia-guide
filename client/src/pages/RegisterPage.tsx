@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { useAuth } from '../auth/useAuth'
 import { TextField } from '../components/TextField'
 import { ApiError } from '../lib/api'
-import { errorBoxClassName, primaryButtonClassName } from '../lib/styles'
+import { errorBoxClassName, primaryButtonClassName, pageTitleClassName } from '../lib/styles'
+import { useScreenNavigate } from '../lib/useScreenNavigate'
 
 export function RegisterPage() {
   const { register } = useAuth()
-  const navigate = useNavigate()
+  const navigate = useScreenNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -21,7 +22,8 @@ export function RegisterPage() {
     setSubmitting(true)
     try {
       await register({ name, email, password, ...(phone && { phone }) })
-      navigate('/')
+      // People sign up to ask for a trip, so the request form comes next.
+      navigate('/trips/new', { replace: true })
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setError('האימייל הזה כבר רשום. אפשר להיכנס במקום.')
@@ -37,7 +39,7 @@ export function RegisterPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl text-brand">הרשמה</h1>
+      <h1 className={pageTitleClassName}>הרשמה</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <TextField
@@ -99,7 +101,7 @@ export function RegisterPage() {
 
       <p className="text-center text-sm">
         כבר יש לך חשבון?{' '}
-        <Link to="/login" className="font-bold text-brand underline">
+        <Link to="/login" className="font-bold text-accent underline">
           לכניסה
         </Link>
       </p>

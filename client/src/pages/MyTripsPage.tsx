@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { useUnread } from '../chat/useUnread'
 import { ReviewForm } from '../components/ReviewForm'
 import { UnreadBadge } from '../components/UnreadBadge'
+import { Loading } from '../components/Loading'
 import { apiFetch } from '../lib/api'
 import { formatDate } from '../lib/dates'
 import {
@@ -11,6 +12,7 @@ import {
   errorBoxClassName,
   primaryButtonClassName,
   secondaryButtonClassName,
+  pageTitleClassName,
 } from '../lib/styles'
 import { formatBudget, servicesSummary, statusPillClassName } from '../trips/format'
 import { kosherLabels, type MyReviews, statusLabels, type TripRequest } from '../trips/types'
@@ -40,7 +42,7 @@ export function MyTripsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl text-brand">הטיולים שלי</h1>
+        <h1 className={pageTitleClassName}>הטיולים שלי</h1>
         <Link to="/trips/new" className={`${primaryButtonClassName} px-4 text-sm`}>
           בקשה חדשה
         </Link>
@@ -52,7 +54,7 @@ export function MyTripsPage() {
         </p>
       )}
 
-      {trips === null && !error && <p className="text-muted">טוען...</p>}
+      {trips === null && !error && <Loading />}
 
       {trips?.length === 0 && (
         <p className={`${cardClassName} text-muted`}>
@@ -65,13 +67,19 @@ export function MyTripsPage() {
           const budget = formatBudget(trip)
           const services = servicesSummary(trip)
           return (
-            <li key={trip.id} className={`${cardClassName} space-y-2`}>
+            // Named like the header of this trip's own screen, so opening it grows the card into it.
+            <li
+              key={trip.id}
+              className={`trip-card ${cardClassName} space-y-2`}
+              style={{ viewTransitionName: `trip-${trip.id}` }}
+            >
               <div className="flex items-center justify-between gap-2">
                 <p className="font-bold">
                   {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
                 </p>
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-xs font-bold whitespace-nowrap ${statusPillClassName[trip.status]}`}
+                  style={{ viewTransitionName: `trip-status-${trip.id}` }}
                 >
                   {statusLabels[trip.status]}
                 </span>

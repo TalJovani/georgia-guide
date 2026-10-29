@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ email, password }),
     })
     setUser(data.user)
+    return data.user
   }
 
   async function register(registerData: RegisterData) {

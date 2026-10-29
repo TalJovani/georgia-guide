@@ -35,11 +35,14 @@ function useNowInGeorgia() {
 }
 
 const slotClassName: Record<SlotState, string> = {
-  past: 'border-line bg-surface opacity-60',
-  now: 'border-brand bg-brand-soft',
-  next: 'border-accent bg-surface',
-  later: 'border-line bg-surface',
+  past: 'bg-surface opacity-55',
+  now: 'bg-brand-soft ring-2 ring-brand',
+  next: 'bg-surface',
+  later: 'bg-surface',
 }
+
+const tileClassName =
+  'press flex flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-3.5 text-center font-semibold leading-tight'
 
 // What the traveler sees during the trip: where they are, today's plan, and help in one tap.
 export function TodayView({ trip }: { trip: TravelerTripDetail }) {
@@ -59,11 +62,11 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
       <section className={`${cardClassName} space-y-1`}>
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm text-muted">היום אתם ב־</span>
-          <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-bold text-accent">
+          <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-accent">
             יום {todayIndex + 1} מתוך {length}
           </span>
         </div>
-        <p className="font-display text-3xl text-brand">{today?.title ?? 'יום חופשי'}</p>
+        <p className="font-display text-3xl font-bold tracking-tight text-ink">{today?.title ?? 'יום חופשי'}</p>
       </section>
 
       <ol aria-label="ההתקדמות במסלול" className="flex gap-1 overflow-x-auto pb-1">
@@ -86,10 +89,10 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
                 <span className="h-3 w-3 rounded-full border-2 border-muted bg-surface" />
               )}
               <span className="text-muted">יום {index + 1}</span>
-              <span className={`line-clamp-2 ${isToday ? 'font-bold text-brand' : ''}`}>
+              <span className={`line-clamp-2 ${isToday ? 'font-bold text-accent' : ''}`}>
                 {day?.title ?? '—'}
               </span>
-              {isToday && <span className="font-bold text-brand">אתם כאן</span>}
+              {isToday && <span className="font-bold text-accent">אתם כאן</span>}
             </li>
           )
         })}
@@ -105,7 +108,7 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
               <li
                 key={activity.id}
                 aria-current={states[index] === 'now' ? 'time' : undefined}
-                className={`grid grid-cols-[3.5rem_1fr_auto] items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm ${slotClassName[states[index]]}`}
+                className={`grid grid-cols-[3.5rem_1fr_auto] items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm ${slotClassName[states[index]]}`}
               >
                 <time dir="ltr" className="text-right font-bold text-muted tabular-nums">
                   {activity.startTime}
@@ -118,12 +121,12 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
                 </span>
                 {states[index] === 'past' && <span className="font-bold text-ok"><Check className="icon" /></span>}
                 {states[index] === 'now' && (
-                  <span className="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-on-brand">
+                  <span className="rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-on-brand">
                     עכשיו
                   </span>
                 )}
                 {states[index] === 'next' && (
-                  <span className="rounded-full border border-accent px-2 py-0.5 text-xs font-bold text-accent">
+                  <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs font-semibold text-accent">
                     הבא
                   </span>
                 )}
@@ -134,26 +137,27 @@ export function TodayView({ trip }: { trip: TravelerTripDetail }) {
         )}
       </section>
 
+      {/* Help in one tap, as three tiles: the icon over its word, the way a phone's own controls sit. */}
       <div className="grid grid-cols-3 gap-2 text-sm">
         {trip.guide?.phone && (
           <a
             href={`tel:${trip.guide.phone}`}
-            className="press rounded-xl bg-accent py-2.5 text-center font-bold text-on-brand"
+            className={tileClassName + ' bg-brand text-on-brand hover:bg-brand-hover'}
           >
-            <Phone className="icon" /> התקשרות למדריך
+            <Phone className="size-5" /> התקשרות למדריך
           </a>
         )}
         <Link
           to={`/trips/${trip.id}/chat`}
-          className="press rounded-xl bg-accent py-2.5 text-center font-bold text-on-brand"
+          className={tileClassName + ' bg-brand-soft text-accent hover:bg-brand/15'}
         >
-          <MessageCircle className="icon" /> צ'אט עם המדריך
+          <MessageCircle className="size-5" /> צ'אט עם המדריך
         </Link>
         <a
           href="tel:112"
-          className="press rounded-xl border-[1.5px] border-danger bg-surface py-2.5 text-center font-bold text-danger"
+          className={tileClassName + ' bg-danger-soft text-danger hover:bg-danger/15'}
         >
-          <Siren className="icon" /> מקרה חירום · 112
+          <Siren className="size-5" /> מקרה חירום · 112
         </a>
       </div>
 

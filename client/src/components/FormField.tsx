@@ -9,7 +9,8 @@ type FormFieldProps = {
 
 export function FormField({ id, label, error, children }: FormFieldProps) {
   return (
-    <div className="space-y-1">
+    // min-w-0: in a grid of two fields, each may shrink to its column instead of to its content.
+    <div className="min-w-0 space-y-1">
       <label htmlFor={id} className="block text-sm font-semibold text-muted">
         {label}
       </label>

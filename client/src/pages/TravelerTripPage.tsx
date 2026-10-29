@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router'
 import { FormField } from '../components/FormField'
 import { ItinerarySchedule } from '../components/ItinerarySchedule'
 import { TodayView } from '../components/TodayView'
+import { Loading } from '../components/Loading'
 import { apiFetch, ApiError } from '../lib/api'
 import { formatDate } from '../lib/dates'
 import {
@@ -13,6 +14,7 @@ import {
   inputClassName,
   primaryButtonClassName,
   secondaryButtonClassName,
+  pageTitleClassName,
 } from '../lib/styles'
 import { formatBudget, statusPillClassName } from '../trips/format'
 import {
@@ -77,7 +79,7 @@ export function TravelerTripPage() {
         </p>
       )}
 
-      {trip === null && !error && <p className="text-muted">טוען...</p>}
+      {trip === null && !error && <Loading />}
 
       {trip && (
         <>
@@ -101,11 +103,13 @@ function TripHeader({ trip }: { trip: TravelerTripDetail }) {
   const budget = formatBudget(trip)
 
   return (
-    <section className={`${cardClassName} space-y-2`}>
+    // Named like this trip's card in the list (MyTripsPage), so the card grows into this header.
+    <section className={`trip-card ${cardClassName} space-y-2`} style={{ viewTransitionName: `trip-${trip.id}` }}>
       <div className="flex items-center justify-between gap-2">
-        <h1 className="font-display text-2xl text-brand">הטיול שלנו</h1>
+        <h1 className={pageTitleClassName}>הטיול שלנו</h1>
         <span
           className={`rounded-full px-2.5 py-0.5 text-xs font-bold whitespace-nowrap ${statusPillClassName[trip.status]}`}
+          style={{ viewTransitionName: `trip-status-${trip.id}` }}
         >
           {statusLabels[trip.status]}
         </span>
@@ -178,7 +182,7 @@ function TripBody({
     case 'CONFIRMED':
       return (
         <section className="space-y-3">
-          <p className={`text-center font-display text-xl text-ok ${justConfirmed ? 'pop-slow' : ''}`}>
+          <p className={`text-center font-display text-xl font-semibold text-ok ${justConfirmed ? 'pop-slow' : ''}`}>
             <Check className="icon" /> הכול סגור. נתראה בגאורגיה!
           </p>
           {schedule}

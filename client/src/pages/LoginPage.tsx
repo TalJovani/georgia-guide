@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
+import { homePath } from '../auth/context'
 import { useAuth } from '../auth/useAuth'
 import { TextField } from '../components/TextField'
 import { ApiError } from '../lib/api'
-import { errorBoxClassName, primaryButtonClassName } from '../lib/styles'
+import { errorBoxClassName, primaryButtonClassName, pageTitleClassName } from '../lib/styles'
+import { useScreenNavigate } from '../lib/useScreenNavigate'
 
 export function LoginPage() {
   const { login } = useAuth()
-  const navigate = useNavigate()
+  const navigate = useScreenNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -18,8 +20,8 @@ export function LoginPage() {
     setError('')
     setSubmitting(true)
     try {
-      await login(email, password)
-      navigate('/')
+      const user = await login(email, password)
+      navigate(homePath(user.role), { replace: true })
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 401
@@ -33,7 +35,7 @@ export function LoginPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl text-brand">כניסה</h1>
+      <h1 className={pageTitleClassName}>כניסה</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <TextField
@@ -74,7 +76,7 @@ export function LoginPage() {
 
       <p className="text-center text-sm">
         אין לך חשבון?{' '}
-        <Link to="/register" className="font-bold text-brand underline">
+        <Link to="/register" className="font-bold text-accent underline">
           להרשמה
         </Link>
       </p>

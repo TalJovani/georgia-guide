@@ -20,6 +20,7 @@ import {
   primaryButtonClassName,
   secondaryButtonClassName,
   successBoxClassName,
+  pageTitleClassName,
 } from '../lib/styles'
 
 export function AccountPage() {
@@ -28,7 +29,7 @@ export function AccountPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl text-brand">החשבון שלי</h1>
+      <h1 className={pageTitleClassName}>החשבון שלי</h1>
       <ProfileSection user={user!} />
       <NotificationsSection />
       <PasswordSection />
@@ -358,7 +359,7 @@ function DeleteAccountSection() {
   }
 
   return (
-    <section className="space-y-3 rounded-xl border border-danger/40 p-4">
+    <section className="space-y-3 rounded-[18px] bg-surface p-5">
       <h2 className="text-lg font-bold text-danger">מחיקת חשבון</h2>
       <p className="text-sm text-muted">
         המחיקה סופית: החשבון וכל בקשות הטיול שלכם יימחקו, ואי אפשר לשחזר אותם.

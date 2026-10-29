@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { useUnread } from '../chat/useUnread'
 import { AiSummaryCard } from '../components/AiSummaryCard'
 import { UnreadBadge } from '../components/UnreadBadge'
+import { Loading } from '../components/Loading'
 import { apiFetch } from '../lib/api'
 import { formatDate } from '../lib/dates'
 import {
@@ -11,6 +12,7 @@ import {
   errorBoxClassName,
   primaryButtonClassName,
   secondaryButtonClassName,
+  pageTitleClassName,
 } from '../lib/styles'
 import { formatBudget, servicesSummary, statusPillClassName } from '../trips/format'
 import {
@@ -44,7 +46,7 @@ export function GuideDashboardPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-baseline justify-between">
-        <h1 className="font-display text-2xl text-brand">לוח המדריך</h1>
+        <h1 className={pageTitleClassName}>לוח המדריך</h1>
         {trips && <span className="text-sm font-bold text-muted">{trips.length} בקשות</span>}
       </div>
 
@@ -73,7 +75,7 @@ export function GuideDashboardPage() {
         </p>
       )}
 
-      {trips === null && !error && <p className="text-muted">טוען...</p>}
+      {trips === null && !error && <Loading />}
 
       {trips?.length === 0 && (
         <p className={`${cardClassName} text-muted`}>
@@ -104,7 +106,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="press rounded-full border border-line bg-surface px-3 py-1 text-sm aria-pressed:border-accent aria-pressed:font-bold aria-pressed:text-accent"
+      className="press rounded-full bg-surface px-3.5 py-1.5 text-sm aria-pressed:bg-ink aria-pressed:font-semibold aria-pressed:text-canvas"
     >
       {children}
     </button>

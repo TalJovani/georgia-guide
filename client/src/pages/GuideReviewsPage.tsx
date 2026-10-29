@@ -2,9 +2,10 @@ import { ArrowRight, Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Stars } from '../components/Stars'
+import { Loading } from '../components/Loading'
 import { apiFetch } from '../lib/api'
 import { formatDate } from '../lib/dates'
-import { cardClassName, errorBoxClassName, secondaryButtonClassName } from '../lib/styles'
+import { cardClassName, errorBoxClassName, secondaryButtonClassName, pageTitleClassName } from '../lib/styles'
 import type { GuideReview } from '../trips/types'
 
 // Every review, hidden ones too. The guide can hide an offensive review from the public
@@ -37,7 +38,7 @@ export function GuideReviewsPage() {
       <Link to="/guide" className="text-sm font-semibold text-accent">
         <ArrowRight className="icon" /> חזרה ללוח המדריך
       </Link>
-      <h1 className="font-display text-2xl text-brand">ביקורות</h1>
+      <h1 className={pageTitleClassName}>ביקורות</h1>
       <p className="text-sm text-muted">
         ביקורת מוסתרת לא מופיעה באתר ולא נכנסת לדירוג הממוצע. אפשר להחזיר אותה בכל רגע.
       </p>
@@ -47,7 +48,7 @@ export function GuideReviewsPage() {
           {error}
         </p>
       )}
-      {reviews === null && !error && <p className="text-muted">טוען...</p>}
+      {reviews === null && !error && <Loading />}
       {reviews?.length === 0 && <p className={`${cardClassName} text-muted`}>עוד אין ביקורות.</p>}
 
       <ul className="space-y-2">

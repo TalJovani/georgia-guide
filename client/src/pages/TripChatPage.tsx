@@ -1,11 +1,12 @@
-import { ArrowRight, Check, CheckCheck, Siren, Sparkles } from 'lucide-react'
+import { ArrowRight, ArrowUp, Check, CheckCheck, Siren, Sparkles } from 'lucide-react'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useAuth } from '../auth/useAuth'
 import { useUnread } from '../chat/useUnread'
+import { Loading } from '../components/Loading'
 import { apiFetch, ApiError } from '../lib/api'
 import { formatDate, formatMessageTime } from '../lib/dates'
-import { cardClassName, errorBoxClassName, inputClassName, primaryButtonClassName } from '../lib/styles'
+import { cardClassName, errorBoxClassName, inputClassName, pageTitleClassName } from '../lib/styles'
 import { statusPillClassName } from '../trips/format'
 import { type ChatMessage, statusLabels, type TripChat } from '../trips/types'
 
@@ -86,15 +87,20 @@ export function TripChatPage({ backTo }: { backTo: (tripId: string) => string })
         </p>
       )}
 
-      {chat === null && !error && <p className="text-muted">טוען...</p>}
+      {chat === null && !error && <Loading />}
 
       {chat && (
         <>
-          <section className={`${cardClassName} space-y-1`}>
+          {/* Named like the trip's own header (TravelerTripPage), so opening the chat carries the card over. */}
+          <section
+            className={`trip-card ${cardClassName} space-y-1`}
+            style={{ viewTransitionName: `trip-${id}` }}
+          >
             <div className="flex items-center justify-between gap-2">
-              <h1 className="font-display text-2xl text-brand">צ'אט עם {otherSide}</h1>
+              <h1 className={pageTitleClassName}>צ'אט עם {otherSide}</h1>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-xs font-bold whitespace-nowrap ${statusPillClassName[chat.trip.status]}`}
+                style={{ viewTransitionName: `trip-status-${id}` }}
               >
                 {statusLabels[chat.trip.status]}
               </span>
@@ -109,7 +115,7 @@ export function TripChatPage({ backTo }: { backTo: (tripId: string) => string })
           {user?.role === 'TRAVELER' && chat.trip.status === 'IN_PROGRESS' && (
             <a
               href="tel:112"
-              className="press block rounded-xl border-[1.5px] border-danger bg-surface py-2 text-center text-sm font-bold text-danger"
+              className="press block rounded-full bg-danger-soft py-3 text-center text-sm font-semibold text-danger"
             >
               <Siren className="icon" /> מקרה חירום? חייגו 112
             </a>
@@ -155,10 +161,14 @@ function MessageList({ messages }: { messages: ChatMessage[] }) {
       {messages.map((message) => (
         <li
           key={message.id}
-          className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${initialIds.has(message.id) ? '' : 'enter'} ${
+          // Like iMessage: yours in blue on the far side, theirs in white; the tail is the one
+          // sharper bottom corner. A message that arrives now springs from that corner.
+          className={`max-w-[80%] rounded-[20px] px-3.5 py-2 text-[15px] leading-snug ${
+            initialIds.has(message.id) ? '' : message.fromMe ? 'bubble-in bubble-in--mine' : 'bubble-in'
+          } ${
             message.fromMe
-              ? 'self-end rounded-se-sm bg-accent text-on-brand'
-              : 'self-start rounded-ss-sm border border-line bg-surface'
+              ? 'self-end rounded-ee-md bg-brand text-on-brand'
+              : 'self-start rounded-es-md bg-surface text-ink'
           }`}
         >
           <p className="break-words whitespace-pre-wrap">{message.body}</p>
@@ -257,32 +267,35 @@ function SendForm({
       {isDraft && (
         <p className="enter text-xs font-bold text-ai"><Sparkles className="icon" /> טיוטה של AI. קראו, תקנו אם צריך, ורק אז שלחו.</p>
       )}
-      <textarea
-        id="chat-body"
-        rows={isDraft ? 5 : 3}
-        maxLength={MAX_MESSAGE_LENGTH}
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder="כתבו הודעה..."
-        className={`${inputClassName} ${isDraft ? 'border-dashed border-ai' : ''}`}
-      />
-      <div className={canSuggest ? 'grid grid-cols-2 gap-2' : ''}>
-        {canSuggest && (
-          <button
-            type="button"
-            onClick={suggest}
-            disabled={suggesting || sending}
-            className={`press rounded-xl border-[1.5px] border-dashed border-ai py-2.5 text-center font-bold text-ai ${suggesting ? 'thinking' : 'disabled:opacity-60'}`}
-          >
-            <Sparkles className="icon" /> {suggesting ? 'מנסח...' : 'הצעת תשובה'}
-          </button>
-        )}
+      {canSuggest && (
+        <button
+          type="button"
+          onClick={suggest}
+          disabled={suggesting || sending}
+          className={`press rounded-full px-1 text-sm font-semibold text-ai ${suggesting ? 'thinking' : 'disabled:opacity-50'}`}
+        >
+          <Sparkles className="icon" /> {suggesting ? 'מנסח...' : 'הצעת תשובה'}
+        </button>
+      )}
+      {/* One line like a phone's own messages: the box grows with what you write, up to a few
+          lines, and the round send button wakes up once there is something to send. */}
+      <div className="flex items-end gap-2">
+        <textarea
+          id="chat-body"
+          rows={1}
+          maxLength={MAX_MESSAGE_LENGTH}
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="כתבו הודעה..."
+          className={`${inputClassName} max-h-40 min-h-11 resize-none rounded-[22px] [field-sizing:content] ${isDraft ? 'border-dashed border-ai' : ''}`}
+        />
         <button
           type="submit"
+          aria-label={sending ? 'שולח' : 'שליחה'}
           disabled={sending || suggesting || !body.trim()}
-          className={`w-full ${primaryButtonClassName}`}
+          className="press grid size-11 shrink-0 place-items-center rounded-full bg-brand text-on-brand transition-[transform,opacity,background-color] duration-200 hover:bg-brand-hover disabled:scale-90 disabled:opacity-30"
         >
-          {sending ? 'שולח...' : 'שליחה'}
+          <ArrowUp className="size-5" strokeWidth={2.5} />
         </button>
       </div>
     </form>
