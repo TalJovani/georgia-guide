@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "set-role": "tsx src/scripts/setRole.ts"
+    "set-role": "tsx src/scripts/setRole.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +35,7 @@
     "@types/web-push": "^3.6.4",
     "prisma": "7.10.0",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
   }
 }
