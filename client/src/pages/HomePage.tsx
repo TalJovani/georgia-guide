@@ -15,8 +15,9 @@ const photo = (file: string) => `/landing/${file}`
 // A delay for the nth piece of an entrance, as a CSS custom property the stylesheet reads.
 const delay = (ms: number) => ({ '--d': `${ms}ms` }) as CSSProperties
 
+// In Miki's own voice: the first thing people read after the name.
 const statement =
-  'מיקי נולד בגיאורגיה, טס אליה כמעט כל חודש, ומדבר עברית, אנגלית וגיאורגית. הוא בונה לכם טיול אישי, יום אחרי יום, ומלווה אתכם בטלפון לאורך כל הדרך.'
+  'אני מיקי. נולדתי וגדלתי בכפר קטן ליד טביליסי. היום אני גר בישראל, אבל הלב שלי נשאר בגיאורגיה, ומדי כמה שבועות אני חוזר אליה, לגלות עוד פינה שרק המקומיים מכירים.'
 
 type Place = { name: string; ka: string; text: string; image: string; alt: string }
 
@@ -26,8 +27,8 @@ const places: Place[] = [
     name: 'טביליסי',
     ka: 'თბილისი',
     text: 'העיר העתיקה, מרחצאות הגופרית וגשר השלום מעל המטקוורי.',
-    image: 'old-tbilisi-from-narikala.jpg',
-    alt: 'טביליסי העתיקה ממבצר נריקלה, עם הנהר וגשר השלום',
+    image: 'tbilisi-panorama-metekhi.jpg',
+    alt: 'טביליסי מלמעלה: כנסיית מטחי על הצוק, נהר המטקוורי, מבצר נריקלה וגשר השלום',
   },
   {
     name: 'מצחתה',
@@ -116,14 +117,14 @@ const steps = [
   {
     title: 'אחר כך, מסלול.',
     text: 'מיקי בונה לכם מסלול אישי, יום אחרי יום ושעה אחרי שעה. משנים ומדייקים יחד, עד שהוא בדיוק כמו שרציתם.',
-    image: 'view-of-sighnaghi-02.jpg',
-    alt: 'סיגנאגי מעל עמק אלאזני',
+    image: 'tbilisi-legvtakhevi-waterfall.jpg',
+    alt: 'מפל לגבתח׳בי וגשר לבן בין עצים ירוקים, בלב העיר העתיקה של טביליסי',
   },
   {
     title: 'ובזמן הטיול, מיקי איתכם.',
     text: 'בטלפון ובצ׳אט, בזמן אמת: לאן נוסעים עכשיו, מה מזמינים, ומה עושים אם משהו משתנה.',
-    image: 'kazbegi-mountains-2.jpg',
-    alt: 'הרי קזבגי',
+    image: 'tbilisi-old-town-night-street.jpg',
+    alt: 'רחוב מסעדות מואר בטביליסי העתיקה בלילה, שולחנות בחוץ ושרשראות אורות',
   },
 ]
 
@@ -131,8 +132,7 @@ const steps = [
 const credits = [
   { what: 'כנסיית השילוש בגרגטי', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/w/index.php?curid=116990360', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
   { what: 'טביליסי בלילה', by: 'Boris Kuznetsov', licence: 'CC BY 2.0', page: 'https://commons.wikimedia.org/wiki/File:Tbilisi_at_Night,_Georgia.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/2.0/' },
-  { what: 'טביליסי העתיקה מנריקלה', by: 'Vyacheslav Argenberg', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/wiki/File:Tbilisi,_Old_Tbilisi_from_Narikala,_Georgia.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
-  { what: 'טביליסי, תחילת המאה ה־20', by: 'Sergei Prokudin-Gorskii', licence: 'נחלת הכלל', page: 'https://commons.wikimedia.org/wiki/File:View_of_Havlabar_(Tbilisi),_in_the_early_1900s,_Sergei_Mikhailovich_Prokudin-Gorskii.jpg', licenceUrl: 'https://creativecommons.org/publicdomain/mark/1.0/' },
+  { what: 'אושגולי והר שחרה', by: 'Arian Zwegers', licence: 'CC BY 2.0', page: 'https://commons.wikimedia.org/wiki/File:Ushguli_and_Mt_Shkhara_(35923023802).jpg', licenceUrl: 'https://creativecommons.org/licenses/by/2.0/' },
   { what: 'מנזר ג׳ווארי', by: 'falco', licence: 'CC0', page: 'https://commons.wikimedia.org/w/index.php?curid=105104108', licenceUrl: 'https://creativecommons.org/publicdomain/zero/1.0/' },
   { what: 'סיגנאגי', by: 'Bernard Gagnon', licence: 'CC BY 4.0', page: 'https://commons.wikimedia.org/wiki/File:View_of_Sighnaghi_02.jpg', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' },
   { what: 'הרי קזבגי', by: 'Sandromedia123', licence: 'CC0', page: 'https://commons.wikimedia.org/w/index.php?curid=188463559', licenceUrl: 'https://creativecommons.org/publicdomain/zero/1.0/' },
@@ -238,15 +238,12 @@ export function HomePage() {
           <h1 className="ap-brand" dir="ltr" data-load style={delay(120)}>
             <span>Georgia</span> <span>Trips</span>
           </h1>
-          <p className="ap-brand__ka ap-ka" lang="ka" dir="ltr" aria-hidden="true" data-load style={delay(220)}>
-            საქართველო
-          </p>
           <p className="ap-intro ap-hero__sub" data-load style={delay(320)}>
-            <strong>גיאורגיה. בעברית.</strong> טיול אישי עם מיקי, שנולד שם ומכיר כל פינה.
+             טיול אישי מרחוק עם מיקי, מדריך מקומי שנולד בגיאורגיה ומכיר כל פינה.
           </p>
           <div className="ap-actions" data-load style={delay(380)}>
             <PrimaryAction />
-            <a href="#how" className="ap-more">
+            <a href="#how" className="ap-pill ap-pill--quiet">
               איך זה עובד
             </a>
           </div>
@@ -275,27 +272,35 @@ export function HomePage() {
             </p>
           </div>
           <div className="ap-bento">
-            <div className="ap-card ap-card--3" data-reveal>
-              <p className="ap-card__big">3</p>
-              <p className="ap-card__title">שפות.</p>
-              <p className="ap-card__text">עברית איתכם, גיאורגית עם המקומיים, ואנגלית לכל השאר.</p>
-            </div>
-            <figure className="ap-card ap-card--3 ap-card--photo" data-reveal style={delay(80)}>
+            <figure className="ap-card ap-card--3 ap-card--photo" data-reveal>
               <img
-                src={photo('view-of-havlabar-tbilisi-in-the-early.jpg')}
-                width={1440}
-                height={1251}
+                src={photo('ushguli-shkhara.jpg')}
+                width={1600}
+                height={1066}
                 decoding="async"
-                alt="טביליסי מלמעלה בצילום צבע מתחילת המאה ה־20"
+                alt="הכפר אושגולי בסבנטי, מגדלי אבן עתיקים בעמק ירוק, ומעליו פסגת השחרה המושלגת"
               />
               <figcaption className="ap-card__over">
-                <p className="ap-card__title">העיר שמיקי גדל בה.</p>
-                <p className="ap-card__text">טביליסי, בצילום צבע של פרוקודין־גורסקי מתחילת המאה ה־20.</p>
+                <p className="ap-card__title">אושגולי, סבנטי.</p>
+                <p className="ap-card__text">מגדלי אבן בני מאות שנים, מתחת להר הגבוה בגיאורגיה.</p>
+              </figcaption>
+            </figure>
+            <figure className="ap-card ap-card--3 ap-card--photo" data-reveal style={delay(80)}>
+              <img
+                src={photo('tbilisi-mtatsminda-sunset.jpg')}
+                width={800}
+                height={530}
+                decoding="async"
+                alt="שקיעה מעל טביליסי, מפארק מטצמינדה עם הגלגל הענק ומגדל הטלוויזיה"
+              />
+              <figcaption className="ap-card__over">
+                <p className="ap-card__title">הבית של מיקי.</p>
+                <p className="ap-card__text">טביליסי בשקיעה. מיקי גדל בכפר קטן לא רחוק מכאן.</p>
               </figcaption>
             </figure>
             <div className="ap-card ap-card--2" data-reveal>
-              <p className="ap-card__big ap-card__big--mid">כל חודש</p>
-              <p className="ap-card__text">מיקי טס לגיאורגיה כמעט כל חודש, אז הוא תמיד מעודכן.</p>
+              <p className="ap-card__big ap-card__big--mid">שוב ושוב</p>
+              <p className="ap-card__text">מיקי חוזר לגיאורגיה כל כמה שבועות, אז הוא תמיד מעודכן.</p>
             </div>
             <div className="ap-card ap-card--2" data-reveal style={delay(80)}>
               <p className="ap-card__big ap-card__big--mid">2.5 שעות</p>
@@ -306,15 +311,24 @@ export function HomePage() {
               <p className="ap-card__text">מסעדות שמתאימות בדיוק, מכשר־סטייל ועד מהדרין.</p>
             </div>
             <div className="ap-card ap-card--3" data-reveal>
-              <p className="ap-card__title">גם עם ילדים.</p>
-              <p className="ap-card__text">אטרקציות ונופים לכל הגילים, וקצב שמתאים לכל המשפחה.</p>
+              <p className="ap-card__title">קודם כול, הקשבה.</p>
+              <p className="ap-card__text">
+                מיקי מכיר אתכם, מה אתם אוהבים ובאיזה קצב, ומתאים את הטיול כך שכולם ירגישו בנוח, גם הילדים.
+                ממש כמו משפחה.
+              </p>
             </div>
             <div className="ap-card ap-card--3" data-reveal style={delay(80)}>
               <p className="ap-card__title">בלי פערי תיווך.</p>
               <p className="ap-card__text">
-                יותר טיול על אותו תקציב. וצריכים רכב? מיקי ידאג לרכב שכור.
+                מיקי מכיר את המחירים המקומיים, אז תקבלו תמורה מצוינת לכסף. וצריכים רכב? מיקי ידאג לרכב שכור.
               </p>
             </div>
+            <blockquote className="ap-card ap-card--6 ap-card--quote" data-reveal>
+              <p className="ap-card__title">
+                "בשבילי, להדריך בגיאורגיה זה הרבה יותר מעבודה. זו הזדמנות לחלוק איתכם את הבית שלי."
+              </p>
+              <footer className="ap-card__text">מיקי</footer>
+            </blockquote>
           </div>
         </div>
       </section>
@@ -353,7 +367,7 @@ export function HomePage() {
             מוכנים לגיאורגיה?
           </h2>
           <p className="ap-intro" data-reveal style={delay(100)}>
-            ספרו למיקי מתי אתם רוצים לטוס ומה אתם אוהבים. הוא כבר יבנה לכם את הטיול.
+            "המטרה שלי פשוטה: שלא רק תראו את גיאורגיה, אלא תכירו, תרגישו ותתאהבו בה. בדיוק כמוני." ❤️
           </p>
           <div className="ap-actions" data-reveal style={delay(200)}>
             <PrimaryAction />
@@ -378,7 +392,7 @@ function ProductBar() {
           Georgia Trips
         </Link>
         <div className="ap-nav__links">
-          <a href="#miki">מיקי</a>
+          <a href="#miki">קצת עליי</a>
           <a href="#places">מקומות</a>
           <a href="#how">איך זה עובד</a>
           {user ? <Link to="/account">החשבון שלי</Link> : <Link to="/login">כניסה</Link>}
@@ -406,7 +420,7 @@ function PrimaryAction({ small = false }: { small?: boolean }) {
   )
 }
 
-// The second choice, as a blue text link with a chevron.
+// The second choice, as a plain blue text link.
 function SecondaryLink() {
   const { user } = useAuth()
   if (user?.role === 'GUIDE') return null
@@ -447,7 +461,8 @@ function Places() {
     const el = track.current
     const card = el?.firstElementChild as HTMLElement | null
     if (!el || !card) return
-    el.scrollBy({ left: -direction * (card.offsetWidth + 20), behavior: 'smooth' })
+    const gap = parseFloat(getComputedStyle(el).columnGap) || 0
+    el.scrollBy({ left: -direction * (card.offsetWidth + gap), behavior: 'smooth' })
   }
 
   return (
@@ -476,10 +491,10 @@ function Places() {
       </ul>
       <div className="ap-wrap ap-gallery__controls">
         <button type="button" className="ap-round" aria-label="המקום הקודם" onClick={() => move(-1)}>
-          ›
+          ‹
         </button>
         <button type="button" className="ap-round" aria-label="המקום הבא" onClick={() => move(1)}>
-          ‹
+          ›
         </button>
       </div>
     </section>
@@ -501,11 +516,12 @@ function Phrasebook() {
       <div className="ap-wrap">
         <div className="ap-chapter__head">
           <h2 id="say-title" className="ap-headline" data-reveal>
-            מה שמיקי יגיד בשבילכם.
+           כמה מילים בגיאורגית שיעזרו לכם..
           </h2>
           <p className="ap-intro" data-reveal style={delay(100)}>
-            בגיאורגיה כותבים באלפבית שלא דומה לשום אלפבית אחר. מיקי מדבר בשבילכם, ובכל זאת נעים לדעת
-            כמה מילים.
+            במסעדה, ברחוב או סתם בדרך למלון 😊
+            <br />
+            בחרנו עבורכם את המילים הכי שימושיות ליום יום בגיאורגיה
           </p>
         </div>
         <div className="ap-say" data-reveal>
@@ -666,7 +682,8 @@ function Voices() {
               <span className="ap-voice__stars" aria-hidden="true">
                 {'★'.repeat(stars)}
               </span>{' '}
-              {data.average.toFixed(1)} מתוך 5, לפי {count}
+              {/* One decimal only when it says something: 5, but 4.5. */}
+              {Number(data.average.toFixed(1))} מתוך 5, לפי {count}
             </p>
           )}
         </div>
@@ -706,6 +723,12 @@ function Footer() {
   return (
     <footer className="ap-foot">
       <div className="ap-wrap">
+        {/* Back to the start. Glides there, unless the visitor asked for less motion (see `html`). */}
+        <div className="ap-foot__top">
+          <button type="button" className="ap-pill ap-pill--quiet" onClick={() => window.scrollTo({ top: 0 })}>
+            חזרה למעלה ↑
+          </button>
+        </div>
         <p className="ap-foot__credits">
           התמונות מוויקישיתוף:{' '}
           {credits.map((credit, index) => (
